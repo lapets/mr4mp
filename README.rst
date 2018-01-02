@@ -24,7 +24,7 @@ Examples
 Word-Document Index
 ~~~~~~~~~~~~~~~~~~~
 
-Suppose we have some functions that we can use to build an index of randomly generated words:
+Suppose we have some functions that we can use to build an index of randomly generated words::
 
     def word(): # Generate a random 7-letter "word".
         return ''.join(choice(ascii_lowercase) for _ in range(7))
@@ -35,24 +35,24 @@ Suppose we have some functions that we can use to build an index of randomly gen
     def merge(i, j): # Merge two index dictionaries i and j.
         return {k:(i.get(k,set()) | j.get(k,set())) for k in i.keys() | j.keys()}
 
-We can then construct an index in the following way:
+We can then construct an index in the following way::
 
     start = timer()
     pool = mr4mp.pool()
     pool.mapreduce(index, merge, range(100))
     print("Finished in " + str(timer()-start) + "s using " + str(len(pool)) + " process(es).")
 
-The above might yield the following output:
+The above might yield the following output::
 
     Finished in 0.664681524217187s using 2 process(es).
 
-Suppose we had instead explicitly specified that only one process can be used:
+Suppose we had instead explicitly specified that only one process can be used::
 
     start = timer()
     pool = mr4mp.pool(1)
     pool.mapreduce(index, merge, range(100))
     print("Finished in " + str(timer()-start) + "s using " + str(len(pool)) + " process(es).")
 
-For the above variant, we might see the following output:
+For the above variant, we might see the following output::
 
     Finished in 2.23329004518571s using 1 process(es).

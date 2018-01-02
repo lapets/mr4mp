@@ -1,0 +1,59 @@
+=====
+mr4mp
+=====
+
+Thin MapReduce-like layer on top of the Python multiprocessing library.
+
+.. image:: https://badge.fury.io/py/mr4mp.svg
+   :target: https://badge.fury.io/py/mr4mp
+   :alt: PyPI version and link.
+
+Package Installation and Usage
+------------------------------
+The package is available on PyPI::
+
+    python -m pip install mr4mp
+
+The library can be imported in the usual way::
+
+    import mr4mp
+
+Examples
+--------
+
+Word-Document Index
+~~~~~~~~~~~~~~~~~~~
+
+Suppose we have some functions that we can use to build an index of randomly generated words:
+```python
+def word(): # Generate a random 7-letter "word".
+    return ''.join(choice(ascii_lowercase) for _ in range(7))
+
+def index(id): # Build an index mapping some random words to an identifier.
+    return {w:{id} for w in {word() for _ in range(100)}}
+
+def merge(i, j): # Merge two index dictionaries i and j.
+    return {k:(i.get(k,set()) | j.get(k,set())) for k in i.keys() | j.keys()}
+```
+We can then construct an index in the following way:
+```python
+start = timer()
+pool = mr4mp.pool()
+pool.mapreduce(index, merge, range(100))
+print("Finished in " + str(timer()-start) + "s using " + str(len(pool)) + " process(es).")
+```
+The above might yield the following output:
+```python
+Finished in 0.664681524217187s using 2 process(es).
+```
+Suppose we had instead explicitly specified that only one process can be used:
+```python
+start = timer()
+pool = mr4mp.pool(1)
+pool.mapreduce(index, merge, range(100))
+print("Finished in " + str(timer()-start) + "s using " + str(len(pool)) + " process(es).")
+```
+For the above variant, we might see the following output:
+```python
+Finished in 2.23329004518571s using 1 process(es).
+```

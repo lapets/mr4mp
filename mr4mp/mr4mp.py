@@ -1,10 +1,9 @@
 ###############################################################################
 ## 
 ## mr4mp.py
+## https://github.com/lapets/mr4mp
 ##
-##   Thin MapReduce-like layer on top of the Python multiprocessing library.
-##
-##   Web: https://github.com/lapets/mr4mp
+## Thin MapReduce-like layer on top of the Python multiprocessing library.
 ##
 ##
 

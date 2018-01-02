@@ -48,11 +48,7 @@ The above might yield the following output::
 
 Suppose we had instead explicitly specified that only one process can be used::
 
-    start = timer()
     pool = mr4mp.pool(1)
-    pool.mapreduce(index, merge, range(100))
-    print("Finished in " + str(timer()-start) + "s using " + str(len(pool)) + " process(es).")
 
-For the above variant, we might see the following output::
 
     Finished in 2.23329004518571s using 1 process(es).

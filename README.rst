@@ -50,5 +50,6 @@ Suppose we had instead explicitly specified that only one process can be used::
 
     pool = mr4mp.pool(1)
 
+After the above modification, we might see the following output from the code block::
 
     Finished in 2.23329004518571s using 1 process(es).

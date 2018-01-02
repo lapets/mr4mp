@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name             = 'mr4mp',
-    version          = '0.0.2.0',
+    version          = '0.0.3.0',
     packages         = ['mr4mp',],
     install_requires = ['multiprocessing', 'parts',],
     license          = 'MIT',

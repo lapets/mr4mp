@@ -2,9 +2,9 @@ from setuptools import setup
 
 setup(
     name             = 'mr4mp',
-    version          = '0.0.3.0',
+    version          = '0.0.4.0',
     packages         = ['mr4mp',],
-    install_requires = ['multiprocessing', 'parts',],
+    install_requires = ['parts',],
     license          = 'MIT',
     url              = 'https://github.com/lapets/mr4mp',
     author           = 'Andrei Lapets',

@@ -37,10 +37,13 @@ Suppose we have some functions that we can use to build an index of randomly gen
 
 We can then construct an index in the following way::
 
-    start = timer()
+    from random import choice
+    from string import ascii_lowercase
+    from timeit import default_timer
+    start = default_timer()
     pool = mr4mp.pool()
     pool.mapreduce(index, merge, range(100))
-    print("Finished in " + str(timer()-start) + "s using " + str(len(pool)) + " process(es).")
+    print("Finished in " + str(default_timer()-start) + "s using " + str(len(pool)) + " process(es).")
 
 The above might yield the following output::
 

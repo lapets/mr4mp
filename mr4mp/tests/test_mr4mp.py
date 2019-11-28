@@ -5,12 +5,15 @@ from unittest import TestCase
 import mr4mp
 
 def word():
+    """Create a random seven-letter word."""
     return ''.join(choice(ascii_lowercase) for _ in range(7))
 
 def index(id):
+    """Given an index value, make 100 words that map to it."""
     return {w:{id} for w in {word() for _ in range(100)}}
 
 def merge(i, j):
+    """Merge two word counts."""
     return {k:(i.get(k,set()) | j.get(k,set())) for k in i.keys() | j.keys()}
 
 class TestPool(TestCase):
@@ -22,5 +25,3 @@ class TestPool(TestCase):
         print("Finished in " + str(default_timer()-start) +
               "s using " + str(len(pool)) + " processes.")
         self.assertEqual(type(result), dict)
-
-## eof

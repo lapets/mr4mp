@@ -17,11 +17,16 @@ def merge(i, j):
     return {k:(i.get(k,set()) | j.get(k,set())) for k in i.keys() | j.keys()}
 
 class TestPool(TestCase):
-    def test_mapreduce(self):
+    def test_pool_mapreduce(self):
         pool = mr4mp.pool()
         print("Starting.")
         start = default_timer()
         result = pool.mapreduce(index, merge, range(100))
         print("Finished in " + str(default_timer()-start) +
               "s using " + str(len(pool)) + " processes.")
+        self.assertEqual(type(result), dict)
+
+class TestMapReduce(TestCase):
+    def test_mapreduce(self):
+        result = mr4mp.mapreduce(index, merge, range(100))
         self.assertEqual(type(result), dict)

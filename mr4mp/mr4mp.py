@@ -59,5 +59,13 @@ class Pool():
 
 pool = Pool # Alternative synonym.
 
+def mapreduce(m, r, xs, processes = None):
+    """
+    One-shot synonym (no explicit object management
+    or resource allocation).
+    """
+    p = pool() if processes is None else pool(processes)
+    return p.mapreduce(m, r, xs)
+
 if __name__ == "__main__": 
     doctest.testmod()

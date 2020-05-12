@@ -35,13 +35,28 @@ class Pool():
         """
         return reduce(op, self.pool.map(partial(reduce, op), xs_per_part))
 
-    def mapreduce(self, m, r, xs, close = True):
+    def mapreduce(self, m, r, xs, stages = None, progress = None, close = True):
         """
         Perform the map and reduce operations in sequence and then
         release the resources if directed to do so.
         """
-        result = self.reduce(r, self.map(m, xs))
+        if stages is None:
+            result = self.reduce(r, self.map(m, xs))
+        else:
+            # Separate input into specified number of stages.
+            xss = parts(xs, stages)
+            xss = list(xss) if progress is not None else xss
 
+            # In case there is no progress function, create placeholder.
+            progress = progress if progress is not None else (lambda ss: ss)
+
+            # Perform each stage sequentially.
+            result = None
+            for xs in progress(xss):
+                result_stage = self.reduce(r, self.map(m, xs))
+                result = result_stage if result is None else r(result, result_stage)
+
+        # Release resources if directed to do so.
         if close:
             self.close()
 
@@ -59,13 +74,13 @@ class Pool():
 
 pool = Pool # Alternative synonym.
 
-def mapreduce(m, r, xs, processes = None):
+def mapreduce(m, r, xs, processes = None, stages = None, progress = None):
     """
     One-shot synonym (no explicit object management
     or resource allocation).
     """
     p = pool() if processes is None else pool(processes)
-    return p.mapreduce(m, r, xs)
+    return p.mapreduce(m, r, xs, stages, progress, True)
 
 if __name__ == "__main__": 
     doctest.testmod()

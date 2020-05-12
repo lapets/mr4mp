@@ -26,7 +26,16 @@ class TestPool(TestCase):
               "s using " + str(len(pool)) + " processes.")
         self.assertEqual(type(result), dict)
 
+    def test_pool_mapreduce_stages(self):
+        pool = mr4mp.pool()
+        result = pool.mapreduce(index, merge, range(100), stages = 4)
+        self.assertEqual(type(result), dict)
+
 class TestMapReduce(TestCase):
     def test_mapreduce(self):
         result = mr4mp.mapreduce(index, merge, range(100))
+        self.assertEqual(type(result), dict)
+
+    def test_mapreduce_stages(self):
+        result = mr4mp.mapreduce(index, merge, range(100), stages = 4)
         self.assertEqual(type(result), dict)

@@ -35,10 +35,37 @@ class Pool():
         """
         return reduce(op, self.pool.map(partial(reduce, op), xs_per_part))
 
+    def map(self, m, xs, stages = None, progress = None, close = True):
+        """
+        Perform the map operation (optionally in stages on subsequences
+        of the data) and then release resources if directed to do so.
+        """
+        if stages is None:
+            results = [y for ys in self._map(m, xs) for y in ys]
+        else:
+            # Separate input into specified number of stages.
+            xss = parts(xs, stages)
+            xss = list(xss) if progress is not None else xss
+
+            # In case there is no progress function, create placeholder.
+            progress = progress if progress is not None else (lambda ss: ss)
+
+            # Perform each stage sequentially.
+            results = []
+            for xs in progress(xss):
+                results.extend([y for ys in self._map(m, xs) for y in ys])
+
+        # Release resources if directed to do so.
+        if close:
+            self.close()
+
+        return results
+
     def mapreduce(self, m, r, xs, stages = None, progress = None, close = True):
         """
-        Perform the map and reduce operations in sequence and then
-        release the resources if directed to do so.
+        Perform the map and reduce operations (optionally in stages on
+        subsequences of the data) and then release resources if directed
+        to do so.
         """
         if stages is None:
             result = self._reduce(r, self._map(m, xs))
@@ -73,6 +100,14 @@ class Pool():
         return self.size
 
 pool = Pool # Alternative synonym.
+
+def map_(m, xs, processes = None, stages = None, progress = None):
+    """
+    One-shot synonym (no explicit object management
+    or resource allocation).
+    """
+    p = pool() if processes is None else pool(processes)
+    return p.map(m, xs, stages, progress, True)
 
 def mapreduce(m, r, xs, processes = None, stages = None, progress = None):
     """

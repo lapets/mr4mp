@@ -35,11 +35,21 @@ class Pool():
         """
         return reduce(op, self.pool.map(partial(reduce, op), xs_per_part))
 
-    def mapreduce(self, m, r, xs):
-        """Perform the map and reduce operations in sequence."""
+    def mapreduce(self, m, r, xs, close = True):
+        """
+        Perform the map and reduce operations in sequence and then
+        release the resources if directed to do so.
+        """
         result = self.reduce(r, self.map(m, xs))
-        self.pool.close()
+
+        if close:
+            self.close()
+
         return result
+
+    def close(self):
+        """Release resources."""
+        self.pool.close()
 
     def cpu_count(self):
         return mp.cpu_count()

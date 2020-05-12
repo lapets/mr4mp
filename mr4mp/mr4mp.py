@@ -21,14 +21,14 @@ class Pool():
         self.pool = mp.Pool(processes=processes)
         self.size = processes
 
-    def map(self, op, xs):
+    def _map(self, op, xs):
         """
         Split data (one part per process) and map the operation
         onto each part.
         """
         return self.pool.map(partial(map, op), parts(xs, self.pool._processes))
 
-    def reduce(self, op, xs_per_part):
+    def _reduce(self, op, xs_per_part):
         """
         Apply the specified binary operator to the results
         obtained from multiple processes.
@@ -41,7 +41,7 @@ class Pool():
         release the resources if directed to do so.
         """
         if stages is None:
-            result = self.reduce(r, self.map(m, xs))
+            result = self._reduce(r, self._map(m, xs))
         else:
             # Separate input into specified number of stages.
             xss = parts(xs, stages)
@@ -53,7 +53,7 @@ class Pool():
             # Perform each stage sequentially.
             result = None
             for xs in progress(xss):
-                result_stage = self.reduce(r, self.map(m, xs))
+                result_stage = self._reduce(r, self._map(m, xs))
                 result = result_stage if result is None else r(result, result_stage)
 
         # Release resources if directed to do so.

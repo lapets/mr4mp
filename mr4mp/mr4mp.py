@@ -5,6 +5,7 @@ library.
 """
 
 import multiprocessing as mp
+from operator import concat
 from functools import reduce, partial
 from parts import parts
 import doctest
@@ -16,7 +17,7 @@ class Pool():
     >>> len(Pool()) == mp.cpu_count()
     True
     """
-    def __init__(self, processes=mp.cpu_count()):
+    def __init__(self, processes = mp.cpu_count()):
         """Initialize a pool given the target number of processes."""
         self.pool = mp.Pool(processes=processes)
         self.size = processes
@@ -29,7 +30,10 @@ class Pool():
         if self.size == 1:
             return [[op(x) for x in xs]]
         else:
-            return self.pool.map(partial(map, op), parts(xs, self.pool._processes))
+            return self.pool.map(
+                partial(map, op),
+                parts(xs, self.pool._processes)
+            )
 
     def _reduce(self, op, xs_per_part):
         """
@@ -37,35 +41,9 @@ class Pool():
         obtained from multiple processes.
         """
         if self.size == 1 and len(xs_per_part) == 1:
-            return reduce(op, xs_per_part[0])
+            return reduce(op, map(partial(reduce, op), xs_per_part))
         else:
             return reduce(op, self.pool.map(partial(reduce, op), xs_per_part))
-
-    def map(self, m, xs, stages = None, progress = None, close = True):
-        """
-        Perform the map operation (optionally in stages on subsequences
-        of the data) and then release resources if directed to do so.
-        """
-        if stages is None:
-            results = [y for ys in self._map(m, xs) for y in ys]
-        else:
-            # Separate input into specified number of stages.
-            xss = parts(xs, stages)
-            xss = list(xss) if progress is not None else xss
-
-            # In case there is no progress function, create placeholder.
-            progress = progress if progress is not None else (lambda ss: ss)
-
-            # Perform each stage sequentially.
-            results = []
-            for xs in progress(xss):
-                results.extend([y for ys in self._map(m, xs) for y in ys])
-
-        # Release resources if directed to do so.
-        if close:
-            self.close()
-
-        return results
 
     def mapreduce(self, m, r, xs, stages = None, progress = None, close = True):
         """
@@ -95,6 +73,13 @@ class Pool():
 
         return result
 
+    def mapconcat(self, m, xs, stages = None, progress = None, close = True):
+        """
+        Perform the map operation (optionally in stages on subsequences
+        of the data) and then release resources if directed to do so.
+        """
+        return self.mapreduce(m, concat, xs, stages, progress, close)
+
     def close(self):
         """Release resources."""
         self.pool.close()
@@ -107,35 +92,31 @@ class Pool():
 
 pool = Pool # Alternative synonym.
 
-def map_(m, xs, processes = None, stages = None, progress = None):
-    """
-    One-shot synonym (no explicit object management
-    or resource allocation).
-    """
-    if processes == 1:
-        progress = progress if progress is not None else (lambda ss: ss)
-        if stages is not None:
-            return [m(x) for xs in progress(parts(xs, stages)) for x in xs]
-        else:
-            return [m(x) for x in xs]
-    else:
-        p = pool() if processes is None else pool(processes)
-        return p.map(m, xs, stages, progress, True)
-
 def mapreduce(m, r, xs, processes = None, stages = None, progress = None):
     """
     One-shot synonym (no explicit object management
-    or resource allocation).
+    or resource allocation is required from the user).
     """
     if processes == 1:
         progress = progress if progress is not None else (lambda ss: ss)
         if stages is not None:
-            return reduce(r, [m(x) for xs in progress(parts(xs, stages)) for x in xs])
+            return reduce(r, [
+                m(x) 
+                for xs in progress(list(parts(xs, stages))) 
+                for x in xs
+            ])
         else:
             return reduce(r, [m(x) for x in xs])
     else:
         p = pool() if processes is None else pool(processes)
         return p.mapreduce(m, r, xs, stages, progress, True)
+
+def mapconcat(m, xs, processes = None, stages = None, progress = None):
+    """
+    One-shot synonym (no explicit object management
+    or resource allocation is required from the user).
+    """
+    return mapreduce(m, concat, xs, processes, stages, progress)
 
 if __name__ == "__main__": 
     doctest.testmod()

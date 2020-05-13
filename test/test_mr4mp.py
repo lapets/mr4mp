@@ -20,6 +20,16 @@ def add_one(x):
     return x + 1
 
 class TestPool(TestCase):
+    def test_pool_map_one(self):
+        pool = mr4mp.pool(1)
+        result = pool.map(add_one, range(0,100))
+        self.assertEqual(list(result), list(range(1,101)))
+
+    def test_pool_map_one_stages(self):
+        pool = mr4mp.pool(1)
+        result = pool.map(add_one, range(0,100), stages=4)
+        self.assertEqual(list(result), list(range(1,101)))
+
     def test_pool_map(self):
         pool = mr4mp.pool()
         result = pool.map(add_one, range(0,100))
@@ -45,6 +55,14 @@ class TestPool(TestCase):
         self.assertEqual(type(result), dict)
 
 class TestMap(TestCase):
+    def test_map_one(self):
+        results = mr4mp.map(add_one, range(0,100), processes=1)
+        self.assertEqual(list(results), list(range(1,101)))
+
+    def test_map_one_stages(self):
+        results = mr4mp.map(add_one, range(0,100), processes=1, stages=4)
+        self.assertEqual(list(results), list(range(1,101)))
+
     def test_map(self):
         results = mr4mp.map(add_one, range(0,100))
         self.assertEqual(list(results), list(range(1,101)))
@@ -54,6 +72,14 @@ class TestMap(TestCase):
         self.assertEqual(list(results), list(range(1,101)))
 
 class TestMapReduce(TestCase):
+    def test_mapreduce_one(self):
+        result = mr4mp.mapreduce(index, merge, range(100), processes=1)
+        self.assertEqual(type(result), dict)
+
+    def test_mapreduce_one_stages(self):
+        result = mr4mp.mapreduce(index, merge, range(100), processes=1, stages=4)
+        self.assertEqual(type(result), dict)
+
     def test_mapreduce(self):
         result = mr4mp.mapreduce(index, merge, range(100))
         self.assertEqual(type(result), dict)

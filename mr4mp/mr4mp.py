@@ -26,14 +26,20 @@ class Pool():
         Split data (one part per process) and map the operation
         onto each part.
         """
-        return self.pool.map(partial(map, op), parts(xs, self.pool._processes))
+        if self.size == 1:
+            return [[op(x) for x in xs]]
+        else:
+            return self.pool.map(partial(map, op), parts(xs, self.pool._processes))
 
     def _reduce(self, op, xs_per_part):
         """
         Apply the specified binary operator to the results
         obtained from multiple processes.
         """
-        return reduce(op, self.pool.map(partial(reduce, op), xs_per_part))
+        if self.size == 1 and len(xs_per_part) == 1:
+            return reduce(op, xs_per_part[0])
+        else:
+            return reduce(op, self.pool.map(partial(reduce, op), xs_per_part))
 
     def map(self, m, xs, stages = None, progress = None, close = True):
         """
@@ -106,16 +112,30 @@ def map_(m, xs, processes = None, stages = None, progress = None):
     One-shot synonym (no explicit object management
     or resource allocation).
     """
-    p = pool() if processes is None else pool(processes)
-    return p.map(m, xs, stages, progress, True)
+    if processes == 1:
+        progress = progress if progress is not None else (lambda ss: ss)
+        if stages is not None:
+            return [m(x) for xs in progress(parts(xs, stages)) for x in xs]
+        else:
+            return [m(x) for x in xs]
+    else:
+        p = pool() if processes is None else pool(processes)
+        return p.map(m, xs, stages, progress, True)
 
 def mapreduce(m, r, xs, processes = None, stages = None, progress = None):
     """
     One-shot synonym (no explicit object management
     or resource allocation).
     """
-    p = pool() if processes is None else pool(processes)
-    return p.mapreduce(m, r, xs, stages, progress, True)
+    if processes == 1:
+        progress = progress if progress is not None else (lambda ss: ss)
+        if stages is not None:
+            return reduce(r, [m(x) for xs in progress(parts(xs, stages)) for x in xs])
+        else:
+            return reduce(r, [m(x) for x in xs])
+    else:
+        p = pool() if processes is None else pool(processes)
+        return p.mapreduce(m, r, xs, stages, progress, True)
 
 if __name__ == "__main__": 
     doctest.testmod()

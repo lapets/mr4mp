@@ -4,20 +4,20 @@ Thin MapReduce-like layer on top of the Python multiprocessing
 library.
 """
 
+import doctest
 import multiprocessing as mp
 from operator import concat
 from functools import reduce, partial
 from parts import parts
-import doctest
 
 class Pool():
     """
     Class for a MapReduce-for-multiprocessing pool.
-    
-    >>> len(Pool()) == mp.cpu_count()
+
+    >>> len(Pool()) == Pool().cpu_count()
     True
     """
-    def __init__(self, processes = mp.cpu_count()):
+    def __init__(self, processes=mp.cpu_count()):
         """Initialize a pool given the target number of processes."""
         self.pool = mp.Pool(processes=processes)
         self.size = processes
@@ -45,7 +45,7 @@ class Pool():
         else:
             return reduce(op, self.pool.map(partial(reduce, op), xs_per_part))
 
-    def mapreduce(self, m, r, xs, stages = None, progress = None, close = True):
+    def mapreduce(self, m, r, xs, stages=None, progress=None, close=True):
         """
         Perform the map and reduce operations (optionally in stages on
         subsequences of the data) and then release resources if directed
@@ -63,8 +63,8 @@ class Pool():
 
             # Perform each stage sequentially.
             result = None
-            for xs in progress(xss):
-                result_stage = self._reduce(r, self._map(m, xs))
+            for xs_ in progress(xss):
+                result_stage = self._reduce(r, self._map(m, xs_))
                 result = result_stage if result is None else r(result, result_stage)
 
         # Release resources if directed to do so.
@@ -73,7 +73,7 @@ class Pool():
 
         return result
 
-    def mapconcat(self, m, xs, stages = None, progress = None, close = True):
+    def mapconcat(self, m, xs, stages=None, progress=None, close=True):
         """
         Perform the map operation (optionally in stages on subsequences
         of the data) and then release resources if directed to do so.
@@ -85,6 +85,7 @@ class Pool():
         self.pool.close()
 
     def cpu_count(self):
+        """Return number of available CPUs."""
         return mp.cpu_count()
 
     def __len__(self):
@@ -92,7 +93,7 @@ class Pool():
 
 pool = Pool # Alternative synonym.
 
-def mapreduce(m, r, xs, processes = None, stages = None, progress = None):
+def mapreduce(m, r, xs, processes=None, stages=None, progress=None):
     """
     One-shot synonym (no explicit object management
     or resource allocation is required from the user).
@@ -101,22 +102,22 @@ def mapreduce(m, r, xs, processes = None, stages = None, progress = None):
         progress = progress if progress is not None else (lambda ss: ss)
         if stages is not None:
             return reduce(r, [
-                m(x) 
-                for xs in progress(list(parts(xs, stages))) 
+                m(x)
+                for xs in progress(list(parts(xs, stages)))
                 for x in xs
             ])
         else:
             return reduce(r, [m(x) for x in xs])
     else:
-        p = pool() if processes is None else pool(processes)
-        return p.mapreduce(m, r, xs, stages, progress, True)
+        pool_ = pool() if processes is None else pool(processes)
+        return pool_.mapreduce(m, r, xs, stages, progress, True)
 
-def mapconcat(m, xs, processes = None, stages = None, progress = None):
+def mapconcat(m, xs, processes=None, stages=None, progress=None):
     """
     One-shot synonym (no explicit object management
     or resource allocation is required from the user).
     """
     return mapreduce(m, concat, xs, processes, stages, progress)
 
-if __name__ == "__main__": 
+if __name__ == "__main__":
     doctest.testmod()

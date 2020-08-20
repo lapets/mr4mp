@@ -4,7 +4,9 @@ mr4mp
 
 Thin MapReduce-like layer on top of the Python multiprocessing library.
 
-.. image:: https://badge.fury.io/py/mr4mp.svg
+|pypi|
+
+.. |pypi| image:: https://badge.fury.io/py/mr4mp.svg
    :target: https://badge.fury.io/py/mr4mp
    :alt: PyPI version and link.
 
@@ -56,3 +58,9 @@ Suppose we had instead explicitly specified that only one process can be used::
 After the above modification, we might see the following output from the code block::
 
     Finished in 2.23329004518571s using 1 process(es).
+
+Conventions
+-----------
+Style conventions are enforced using `Pylint <https://www.pylint.org/>`_::
+
+    pylint mr4mp

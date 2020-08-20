@@ -20,6 +20,11 @@ def add_one(x):
     return [x + 1]
 
 class TestPool(TestCase):
+    def test_pool_cpu_count(self):
+        import multiprocessing as mp
+        pool = mr4mp.pool()
+        self.assertEqual(pool.cpu_count(), mp.cpu_count())
+
     def test_pool_mapreduce_one(self):
         pool = mr4mp.pool(1)
         print("Starting.")

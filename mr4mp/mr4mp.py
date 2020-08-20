@@ -120,4 +120,4 @@ def mapconcat(m, xs, processes=None, stages=None, progress=None):
     return mapreduce(m, concat, xs, processes, stages, progress)
 
 if __name__ == "__main__":
-    doctest.testmod()
+    doctest.testmod() # pragma: no cover

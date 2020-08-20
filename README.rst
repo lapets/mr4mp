@@ -59,8 +59,12 @@ After the above modification, we might see the following output from the code bl
 
     Finished in 2.23329004518571s using 1 process(es).
 
-Conventions
------------
+Testing and Conventions
+-----------------------
+All unit tests are executed and their coverage is measured when using `nose <https://nose.readthedocs.io/>`_ (see ``setup.cfg`` for configution details)::
+
+    nosetests
+
 Style conventions are enforced using `Pylint <https://www.pylint.org/>`_::
 
     pylint mr4mp

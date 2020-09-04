@@ -10,8 +10,10 @@ matrix:
         - "3.8"
       install:
         - pip install pylint
-        - pip install coverage
+        - pip install coveralls
         - pip install .
+      after_success:
+        - coveralls
     - os: osx
       language: generic
       before_install:

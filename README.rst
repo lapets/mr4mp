@@ -4,11 +4,14 @@ mr4mp
 
 Thin MapReduce-like layer that wraps the Python multiprocessing library.
 
-|pypi|
+|pypi| |travis|
 
 .. |pypi| image:: https://badge.fury.io/py/mr4mp.svg
    :target: https://badge.fury.io/py/mr4mp
    :alt: PyPI version and link.
+
+.. |travis| image:: https://travis-ci.com/lapets/mr4mp.svg?branch=master
+   :target: https://travis-ci.com/lapets/mr4mp
 
 Package Installation and Usage
 ------------------------------

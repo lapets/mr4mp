@@ -1,0 +1,38 @@
+notifications:
+  email:
+    on_success: never
+    on_failure: always
+matrix:
+  include:
+    - os: linux
+      language: python
+      python:
+        - "3.8"
+      install:
+        - pip install pylint
+        - pip install coverage
+        - pip install .
+    - os: osx
+      language: generic
+      before_install:
+        - brew upgrade python@3.8
+        - sudo python3.8 -m pip install -U pip
+        - sudo python3.8 -m pip install setuptools
+      install:
+        - sudo python3.8 -m pip install pylint
+        - sudo python3.8 -m pip install coverage
+        - sudo python3.8 -m pip install nose
+        - sudo python3.8 -m pip install .
+    - os: windows
+      language: sh
+      before_install:
+        - choco install python --version=3.8.3
+      env: PATH=/c/Python38:/c/Python38/Scripts:$PATH
+      install:
+        - pip install pylint
+        - pip install coverage
+        - pip install nose
+        - pip install .
+script:
+  - pylint mr4mp
+  - nosetests

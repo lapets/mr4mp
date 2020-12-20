@@ -15,16 +15,13 @@ matrix:
       after_success:
         - coveralls
     - os: osx
-      language: generic
-      before_install:
-        - brew upgrade python@3.8
-        - sudo python3.8 -m pip install -U pip
-        - sudo python3.8 -m pip install setuptools
+      osx_image: xcode10.2
+      language: shell
       install:
-        - sudo python3.8 -m pip install pylint
-        - sudo python3.8 -m pip install coverage
-        - sudo python3.8 -m pip install nose
-        - sudo python3.8 -m pip install .
+        - sudo python3 -m pip install pylint
+        - sudo python3 -m pip install coverage
+        - sudo python3 -m pip install nose
+        - sudo python3 -m pip install .
     - os: windows
       language: sh
       before_install:

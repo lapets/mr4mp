@@ -16,6 +16,12 @@ class pool():
 
     >>> len(pool()) == pool().cpu_count()
     True
+    >>> def add_one(x):
+    ...     return [x + 1]
+    >>> with pool(1, close=True) as pool_:
+    ...     results = pool_.mapconcat(m=add_one, xs=range(3))
+    >>> results
+    [1, 2, 3]
     """
     def __init__(self, processes=mp.cpu_count(), stages=None, progress=None, close=False):
         """Initialize a pool given the target number of processes."""
@@ -24,6 +30,18 @@ class pool():
         self._stages = stages
         self._progress = progress
         self._close = close
+
+    def __enter__(self):
+        """
+        Placeholder to enable use of `with` construct.
+        """
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        """
+        Close the pool; exceptions are not suppressed.
+        """
+        self.close()
 
     def _map(self, op, xs):
         """

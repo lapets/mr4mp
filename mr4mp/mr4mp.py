@@ -25,8 +25,8 @@ class pool():
     """
     def __init__(self, processes=mp.cpu_count(), stages=None, progress=None, close=False):
         """Initialize a pool given the target number of processes."""
-        self.pool = mp.Pool(processes=processes)
-        self.size = processes
+        self._pool = mp.Pool(processes=processes)
+        self._processes = processes
         self._stages = stages
         self._progress = progress
         self._close = close
@@ -48,12 +48,12 @@ class pool():
         Split data (one part per process) and map the operation
         onto each part.
         """
-        if self.size == 1:
+        if self._processes == 1:
             return [[op(x) for x in xs]]
         else:
-            return self.pool.map(
+            return self._pool.map(
                 partial(map, op),
-                parts(xs, self.pool._processes)
+                parts(xs, self._pool._processes)
             )
 
     def _reduce(self, op, xs_per_part):
@@ -61,10 +61,10 @@ class pool():
         Apply the specified binary operator to the results
         obtained from multiple processes.
         """
-        if self.size == 1 and len(xs_per_part) == 1:
+        if self._processes == 1 and len(xs_per_part) == 1:
             return reduce(op, map(partial(reduce, op), xs_per_part))
         else:
-            return reduce(op, self.pool.map(partial(reduce, op), xs_per_part))
+            return reduce(op, self._pool.map(partial(reduce, op), xs_per_part))
 
     def mapreduce(self, m, r, xs, stages=None, progress=None, close=None):
         """
@@ -107,14 +107,14 @@ class pool():
 
     def close(self):
         """Release resources."""
-        self.pool.close()
+        self._pool.close()
 
     def cpu_count(self):
         """Return number of available CPUs."""
         return mp.cpu_count()
 
     def __len__(self):
-        return self.size
+        return self._processes
 
 def mapreduce(m, r, xs, processes=None, stages=None, progress=None):
     """

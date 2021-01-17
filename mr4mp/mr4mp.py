@@ -10,11 +10,11 @@ from operator import concat
 from functools import reduce, partial
 from parts import parts
 
-class Pool():
+class pool():
     """
     Class for a MapReduce-for-multiprocessing pool.
 
-    >>> len(Pool()) == Pool().cpu_count()
+    >>> len(pool()) == pool().cpu_count()
     True
     """
     def __init__(self, processes=mp.cpu_count()):
@@ -90,8 +90,6 @@ class Pool():
 
     def __len__(self):
         return self.size
-
-pool = Pool # Alternative synonym.
 
 def mapreduce(m, r, xs, processes=None, stages=None, progress=None):
     """

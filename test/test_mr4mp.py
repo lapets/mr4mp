@@ -2,6 +2,7 @@ from random import choice
 from string import ascii_lowercase
 from timeit import default_timer
 from unittest import TestCase
+
 import mr4mp
 
 def word():
@@ -19,7 +20,7 @@ def merge(i, j):
 def add_one(x):
     return [x + 1]
 
-class TestPool(TestCase):
+class Test_pool(TestCase):
     def test_pool_cpu_count(self):
         import multiprocessing as mp
         pool = mr4mp.pool()
@@ -73,7 +74,7 @@ class TestPool(TestCase):
         result = pool.mapconcat(add_one, range(0,100), stages=4)
         self.assertEqual(list(result), list(range(1,101)))
 
-class TestMapConcat(TestCase):
+class Test_mapconcat(TestCase):
     def test_mapconcat_one(self):
         results = mr4mp.mapconcat(add_one, range(0,100), processes=1)
         self.assertEqual(list(results), list(range(1,101)))
@@ -90,7 +91,7 @@ class TestMapConcat(TestCase):
         results = mr4mp.mapconcat(add_one, range(0,100), stages=4)
         self.assertEqual(list(results), list(range(1,101)))
 
-class TestMapReduce(TestCase):
+class Test_mapreduce(TestCase):
     def test_mapreduce_one(self):
         result = mr4mp.mapreduce(index, merge, range(100), processes=1)
         self.assertEqual(type(result), dict)

@@ -72,6 +72,9 @@ class pool():
         subsequences of the data) and then release resources if directed
         to do so.
         """
+        if self.closed():
+            raise ValueError('Pool not running')
+
         stages = self._stages if stages is None else stages
         progress = self._progress if progress is None else progress
         close = self._close if close is None else close
@@ -108,6 +111,10 @@ class pool():
     def close(self):
         """Release resources."""
         self._pool.close()
+
+    def closed(self):
+        """Indicate whether the pool has been closed."""
+        return self._pool._state == 'CLOSE'
 
     def cpu_count(self):
         """Return number of available CPUs."""

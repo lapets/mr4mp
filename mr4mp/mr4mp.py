@@ -17,10 +17,13 @@ class pool():
     >>> len(pool()) == pool().cpu_count()
     True
     """
-    def __init__(self, processes=mp.cpu_count()):
+    def __init__(self, processes=mp.cpu_count(), stages=None, progress=None, close=False):
         """Initialize a pool given the target number of processes."""
         self.pool = mp.Pool(processes=processes)
         self.size = processes
+        self._stages = stages
+        self._progress = progress
+        self._close = close
 
     def _map(self, op, xs):
         """
@@ -45,12 +48,16 @@ class pool():
         else:
             return reduce(op, self.pool.map(partial(reduce, op), xs_per_part))
 
-    def mapreduce(self, m, r, xs, stages=None, progress=None, close=True):
+    def mapreduce(self, m, r, xs, stages=None, progress=None, close=None):
         """
         Perform the map and reduce operations (optionally in stages on
         subsequences of the data) and then release resources if directed
         to do so.
         """
+        stages = self._stages if stages is None else stages
+        progress = self._progress if progress is None else progress
+        close = self._close if close is None else close
+
         if stages is None:
             result = self._reduce(r, self._map(m, xs))
         else:
@@ -73,7 +80,7 @@ class pool():
 
         return result
 
-    def mapconcat(self, m, xs, stages=None, progress=None, close=True):
+    def mapconcat(self, m, xs, stages=None, progress=None, close=None):
         """
         Perform the map operation (optionally in stages on subsequences
         of the data) and then release resources if directed to do so.
@@ -108,14 +115,14 @@ def mapreduce(m, r, xs, processes=None, stages=None, progress=None):
             return reduce(r, [m(x) for x in xs])
     else:
         pool_ = pool() if processes is None else pool(processes)
-        return pool_.mapreduce(m, r, xs, stages, progress, True)
+        return pool_.mapreduce(m, r, xs, stages=stages, progress=progress, close=True)
 
 def mapconcat(m, xs, processes=None, stages=None, progress=None):
     """
     One-shot synonym (no explicit object management
     or resource allocation is required from the user).
     """
-    return mapreduce(m, concat, xs, processes, stages, progress)
+    return mapreduce(m, concat, xs, processes, stages=stages, progress=progress)
 
 if __name__ == "__main__":
     doctest.testmod() # pragma: no cover

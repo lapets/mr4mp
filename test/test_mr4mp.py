@@ -32,9 +32,10 @@ class log():
     def to_list(self):
         return list(sorted([x for xs in self.logged for x in xs]))
 
-def define_classes_pool_close(processes):
+def define_class_pool_close(processes):
     """
-    Define and return classes of unit tests given a configuration.
+    Define and return class of pool unit tests for the supplied pool closing
+    behavior configuration.
     """
     class Test_pool_close(TestCase):
         def test_pool_mapreduce_pool_close(self):
@@ -95,9 +96,10 @@ def define_classes_pool_close(processes):
 
     return Test_pool_close
 
-def define_classes_pool_stages_progress(processes, stages, progress):
+def define_class_pool_stages_progress(processes, stages, progress):
     """
-    Define and return classes of unit tests given a configuration.
+    Define and return class of pool unit tests for the supplied stage quantity
+    and progress function configuration.
     """
     class Test_pool_stages_progress(TestCase):
         def test_pool_mapreduce(self):
@@ -124,6 +126,40 @@ def define_classes_pool_stages_progress(processes, stages, progress):
 
     return Test_pool_stages_progress
 
+def define_class_functions(processes, stages, progress):
+    """
+    Define and return class of unit tests for stand-alone functions
+    for the given configuration.
+    """
+    class Test_functions(TestCase):
+        def test_mapreduce(self):
+            logger = log() if progress else None
+            result = mr4mp.mapreduce(
+                index, merge, range(0,100),
+                processes=processes, stages=stages, progress=logger
+            )
+            self.assertTrue(isinstance(result, dict))
+            if progress:
+                self.assertEqual(
+                    logger.to_list(),
+                    list(range(100)) if stages is not None else []
+                )
+
+        def test_mapconcat(self):
+            logger = log() if progress else None
+            result = mr4mp.mapconcat(
+                add_one, range(0,100),
+                processes=processes, stages=stages, progress=logger
+            )
+            self.assertEqual(list(result), list(range(1,101)))
+            if progress:
+                self.assertEqual(
+                    logger.to_list(),
+                    list(range(100)) if stages is not None else []
+                )
+
+    return Test_functions
+
 class Test_pool(TestCase):
     def test_pool_cpu_count(self):
         import multiprocessing as mp
@@ -142,48 +178,15 @@ class Test_pool(TestCase):
 
 # The instantiated test classes below are discovered in the local scope
 # and executed by the unit testing framework (e.g., using nosetests).
-vars = locals()
 for processes in (1, 2):
-    name = 'Test_pool_close_' + str(processes)
-    vars[name] = define_classes_pool_close(processes)
-for processes in (1, 2):
+    locals()['Test_pool_close_' + str(processes)] = define_class_pool_close(processes)
     for stages in (None, 4):
         for progress in (False, True):
-            name =\
+            locals()[
                 'Test_pool_stages_progress_' +\
                 "_".join(map(str, [processes, stages, progress]))
-            vars[name] = define_classes_pool_stages_progress(processes, stages, progress)
-
-class Test_mapconcat(TestCase):
-    def test_mapconcat_one(self):
-        results = mr4mp.mapconcat(add_one, range(0,100), processes=1)
-        self.assertEqual(list(results), list(range(1,101)))
-
-    def test_mapconcat_one_stages(self):
-        results = mr4mp.mapconcat(add_one, range(0,100), processes=1, stages=4)
-        self.assertEqual(list(results), list(range(1,101)))
-
-    def test_mapconcat(self):
-        results = mr4mp.mapconcat(add_one, range(0,100))
-        self.assertEqual(list(results), list(range(1,101)))
-
-    def test_mapconcat_stages(self):
-        results = mr4mp.mapconcat(add_one, range(0,100), stages=4)
-        self.assertEqual(list(results), list(range(1,101)))
-
-class Test_mapreduce(TestCase):
-    def test_mapreduce_one(self):
-        result = mr4mp.mapreduce(index, merge, range(100), processes=1)
-        self.assertEqual(type(result), dict)
-
-    def test_mapreduce_one_stages(self):
-        result = mr4mp.mapreduce(index, merge, range(100), processes=1, stages=4)
-        self.assertEqual(type(result), dict)
-
-    def test_mapreduce(self):
-        result = mr4mp.mapreduce(index, merge, range(100))
-        self.assertEqual(type(result), dict)
-
-    def test_mapreduce_stages(self):
-        result = mr4mp.mapreduce(index, merge, range(100), stages=4)
-        self.assertEqual(type(result), dict)
+            ] = define_class_pool_stages_progress(processes, stages, progress)
+            locals()[
+                'Test_functions_' +\
+                "_".join(map(str, [processes, stages, progress]))
+            ] = define_class_functions(processes, stages, progress)

@@ -1,9 +1,25 @@
+from importlib import import_module
 from random import choice
 from string import ascii_lowercase
 from timeit import default_timer
 from unittest import TestCase
 
-import mr4mp
+import mr4mp.mr4mp
+
+def api_methods():
+    """
+    API symbols that should be available to users upon module import.
+    """
+    return {'pool', 'mapreduce', 'mapconcat'}
+
+class Test_namespace(TestCase):
+    """
+    Check that the exported namespace provide access to the expected
+    classes and functions.
+    """
+    def test_module(self):
+        module = import_module('mr4mp.mr4mp')
+        self.assertTrue(api_methods().issubset(module.__dict__.keys()))
 
 def word():
     """Create a random seven-letter word."""

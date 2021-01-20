@@ -3,6 +3,7 @@ from string import ascii_lowercase
 from hashlib import sha256
 from functools import reduce
 from timeit import default_timer
+import multiprocessing as mp
 from unittest import TestCase
 
 import mr4mp.mr4mp
@@ -47,7 +48,7 @@ class log():
     def __call__(self, xs):
         self.logged = xs
         return xs
-        
+
     def to_list(self):
         return list(sorted([x for xs in self.logged for x in xs]))
 
@@ -181,7 +182,6 @@ def define_class_functions(processes, stages, progress):
 
 class Test_pool(TestCase):
     def test_pool_cpu_count(self):
-        import multiprocessing as mp
         pool = mr4mp.pool()
         self.assertEqual(pool.cpu_count(), mp.cpu_count())
         pool.close()

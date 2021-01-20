@@ -16,6 +16,10 @@ Thin MapReduce-like layer that wraps the Python multiprocessing library.
 .. |coveralls| image:: https://coveralls.io/repos/github/lapets/mr4mp/badge.svg?branch=master
    :target: https://coveralls.io/github/lapets/mr4mp?branch=master
 
+Purpose
+-------
+This package provides a streamlined interface for the built-in Python `multiprocessing <https://docs.python.org/3/library/multiprocessing.html>`_ library. The interface makes it possible to parallelize in a succinct way (sometimes using only one line of code) a data workflow that can be expressed in a `MapReduce <https://en.wikipedia.org/wiki/MapReduce>`_-like form. More background information about this package's design and implementation can be found in a `related article <https://github.com/python-supply/map-reduce-and-multiprocessing>`_.
+
 Package Installation and Usage
 ------------------------------
 The package is available on PyPI::
@@ -26,13 +30,13 @@ The library can be imported in the usual way::
 
     import mr4mp
 
-Examples
---------
-
-Word-Document Index
-~~~~~~~~~~~~~~~~~~~
+Word-Document Index Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Suppose we have some functions that we can use to build an index of randomly generated words::
+
+    from random import choice
+    from string import ascii_lowercase
 
     def word(): # Generate a random 7-letter "word".
         return ''.join(choice(ascii_lowercase) for _ in range(7))
@@ -45,19 +49,19 @@ Suppose we have some functions that we can use to build an index of randomly gen
 
 We can then construct an index in the following way::
 
-    from random import choice
-    from string import ascii_lowercase
     from timeit import default_timer
+
     start = default_timer()
     pool = mr4mp.pool()
     pool.mapreduce(index, merge, range(100))
+    pool.close()
     print("Finished in " + str(default_timer()-start) + "s using " + str(len(pool)) + " process(es).")
 
 The above might yield the following output::
 
     Finished in 0.664681524217187s using 2 process(es).
 
-Suppose we had instead explicitly specified that only one process can be used::
+Suppose that we instead explicitly specify that only one process can be used::
 
     pool = mr4mp.pool(1)
 

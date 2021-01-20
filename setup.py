@@ -5,7 +5,7 @@ with open("README.rst", "r") as fh:
 
 setup(
     name="mr4mp",
-    version="0.1.0",
+    version="1.0.0",
     packages=["mr4mp",],
     install_requires=["parts",],
     license="MIT",

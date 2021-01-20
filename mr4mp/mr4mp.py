@@ -1,6 +1,6 @@
 """MapReduce for multiprocessing.
 
-Thin MapReduce-like layer on top of the Python multiprocessing
+Thin MapReduce-like layer that wraps the Python multiprocessing
 library.
 """
 

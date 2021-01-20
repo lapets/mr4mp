@@ -1,6 +1,7 @@
 from importlib import import_module
-from random import choice
 from string import ascii_lowercase
+from hashlib import sha256
+from functools import reduce
 from timeit import default_timer
 from unittest import TestCase
 
@@ -21,17 +22,19 @@ class Test_namespace(TestCase):
         module = import_module('mr4mp.mr4mp')
         self.assertTrue(api_methods().issubset(module.__dict__.keys()))
 
-def word():
-    """Create a random seven-letter word."""
-    return ''.join(choice(ascii_lowercase) for _ in range(7))
+def word(id, k):
+    """Create a random three-character word."""
+    return ''.join(ascii_lowercase[i % 7] for i in sha256(bytes(id * k)).digest()[:3])
 
 def index(id):
-    """Given an index value, make 100 words that map to it."""
-    return {w:{id} for w in {word() for _ in range(100)}}
+    """Given an index value, make 25 words that map to it."""
+    return {w:{id} for w in {word(id, k) for k in range(25)}}
 
 def merge(i, j):
     """Merge two word counts."""
     return {k:(i.get(k,set()) | j.get(k,set())) for k in i.keys() | j.keys()}
+
+result_reference = reduce(merge, map(index, range(50)))
 
 def add_one(x):
     return [x + 1]
@@ -59,56 +62,56 @@ def define_class_pool_close(processes):
             self.assertFalse(pool.closed())
             print("Starting.")
             start = default_timer()
-            result = pool.mapreduce(index, merge, range(100), close=False)
+            result = pool.mapreduce(index, merge, range(50), close=False)
             self.assertFalse(pool.closed())
-            result = pool.mapreduce(index, merge, range(100))
+            result = pool.mapreduce(index, merge, range(50))
             self.assertTrue(pool.closed())
             print("Finished in " + str(default_timer()-start) +
                   "s using " + str(len(pool)) + " processes.")
-            self.assertEqual(type(result), dict)
+            self.assertEqual(result, result_reference)
 
         def test_pool_mapreduce_function_close(self):
             pool = mr4mp.pool(processes, close=False)
             self.assertFalse(pool.closed())
             print("Starting.")
             start = default_timer()
-            result = pool.mapreduce(index, merge, range(100), close=False)
+            result = pool.mapreduce(index, merge, range(50), close=False)
             self.assertFalse(pool.closed())
-            result = pool.mapreduce(index, merge, range(100), close=True)
+            result = pool.mapreduce(index, merge, range(50), close=True)
             self.assertTrue(pool.closed())
             print("Finished in " + str(default_timer()-start) +
                   "s using " + str(len(pool)) + " processes.")
-            self.assertEqual(type(result), dict)
+            self.assertEqual(result, result_reference)
 
         def test_pool_mapreduce_pool_open_reuse(self):
             pool = mr4mp.pool(processes, close=False)
-            result = pool.mapreduce(index, merge, range(100))
-            result = pool.mapreduce(index, merge, range(100))
-            result = pool.mapreduce(index, merge, range(100))
+            result = pool.mapreduce(index, merge, range(50))
+            result = pool.mapreduce(index, merge, range(50))
+            result = pool.mapreduce(index, merge, range(50))
             self.assertFalse(pool.closed())
             pool.close()
             self.assertTrue(pool.closed())
-            self.assertTrue(isinstance(result, dict))
+            self.assertEqual(result, result_reference)
 
         def test_pool_mapreduce_pool_close_reuse_exception(self):
             pool = mr4mp.pool(processes, close=True)
-            result = pool.mapreduce(index, merge, range(100))
+            result = pool.mapreduce(index, merge, range(50))
             with self.assertRaises(ValueError):
-                result = pool.mapreduce(index, merge, range(100))
+                result = pool.mapreduce(index, merge, range(50))
 
         def test_pool_mapreduce_function_close_reuse_exception(self):
             pool = mr4mp.pool(processes, close=False)
-            result = pool.mapreduce(index, merge, range(100), close=True)
+            result = pool.mapreduce(index, merge, range(50), close=True)
             with self.assertRaises(ValueError):
-                result = pool.mapreduce(index, merge, range(100))
+                result = pool.mapreduce(index, merge, range(50))
 
         def test_pool_mapreduce_many_with_as(self):
             with mr4mp.pool(processes) as pool:
-                result = pool.mapreduce(index, merge, range(100))
-                result = pool.mapreduce(index, merge, range(100))
-                result = pool.mapreduce(index, merge, range(100))
+                result = pool.mapreduce(index, merge, range(50))
+                result = pool.mapreduce(index, merge, range(50))
+                result = pool.mapreduce(index, merge, range(50))
                 self.assertFalse(pool.closed())
-            self.assertTrue(isinstance(result, dict))
+            self.assertEqual(result, result_reference)
 
     return Test_pool_close
 
@@ -121,19 +124,19 @@ def define_class_pool_stages_progress(processes, stages, progress):
         def test_pool_mapreduce(self):
             logger = log() if progress else None
             pool = mr4mp.pool(processes, close=True)
-            result = pool.mapreduce(index, merge, range(100), stages=stages, progress=logger)
-            self.assertEqual(type(result), dict)
+            result = pool.mapreduce(index, merge, range(50), stages=stages, progress=logger)
+            self.assertEqual(result, result_reference)
             if progress:
                 self.assertEqual(
                     logger.to_list(),
-                    list(range(100)) if stages is not None else []
+                    list(range(50)) if stages is not None else []
                 )
 
         def test_pool_mapconcat(self):
             logger = log() if progress else None
             pool = mr4mp.pool(processes, close=True)
-            result = pool.mapconcat(add_one, range(0,100), stages=stages, progress=logger)
-            self.assertEqual(list(result), list(range(1,101)))
+            result = pool.mapconcat(add_one, range(0, 100), stages=stages, progress=logger)
+            self.assertEqual(list(result), list(range(1, 101)))
             if progress:
                 self.assertEqual(
                     logger.to_list(),
@@ -151,23 +154,23 @@ def define_class_functions(processes, stages, progress):
         def test_mapreduce(self):
             logger = log() if progress else None
             result = mr4mp.mapreduce(
-                index, merge, range(0,100),
+                index, merge, range(50),
                 processes=processes, stages=stages, progress=logger
             )
-            self.assertTrue(isinstance(result, dict))
+            self.assertEqual(result, result_reference)
             if progress:
                 self.assertEqual(
                     logger.to_list(),
-                    list(range(100)) if stages is not None else []
+                    list(range(50)) if stages is not None else []
                 )
 
         def test_mapconcat(self):
             logger = log() if progress else None
             result = mr4mp.mapconcat(
-                add_one, range(0,100),
+                add_one, range(0, 100),
                 processes=processes, stages=stages, progress=logger
             )
-            self.assertEqual(list(result), list(range(1,101)))
+            self.assertEqual(list(result), list(range(1, 101)))
             if progress:
                 self.assertEqual(
                     logger.to_list(),

@@ -184,16 +184,28 @@ class Test_pool(TestCase):
     def test_pool_cpu_count(self):
         pool = mr4mp.pool()
         self.assertEqual(pool.cpu_count(), mp.cpu_count())
+        self.assertEqual(len(pool), mp.cpu_count())
         pool.close()
 
     def test_pool_mapreduce(self):
         pool = mr4mp.pool(close=True)
         print("Starting.")
         start = default_timer()
-        result = pool.mapreduce(index, merge, range(100))
+        result = pool.mapreduce(index, merge, range(50))
         print("Finished in " + str(default_timer()-start) +
               "s using " + str(len(pool)) + " processes.")
-        self.assertEqual(type(result), dict)
+        self.assertEqual(result, result_reference)
+
+    def test_pool_mapreduce_terminate(self):
+        pool = mr4mp.pool()
+        print("Starting.")
+        start = default_timer()
+        result = pool.mapreduce(index, merge, range(50))
+        print("Finished in " + str(default_timer()-start) +
+              "s using " + str(len(pool)) + " processes.")
+        self.assertEqual(result, result_reference)
+        pool.terminate()
+        self.assertTrue(pool.closed())
 
 # The instantiated test classes below are discovered in the local scope
 # and executed by the unit testing framework (e.g., using nosetests).

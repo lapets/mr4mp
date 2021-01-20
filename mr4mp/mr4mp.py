@@ -29,7 +29,9 @@ class pool():
         self._processes = processes
         self._stages = stages
         self._progress = progress
-        self._close = close
+        self._close = close # Indicates whether to close the pool after first `mapreduce` call.
+        self._closed = False
+        self._terminated = False
 
     def __enter__(self):
         """
@@ -75,6 +77,9 @@ class pool():
         if self.closed():
             raise ValueError('Pool not running')
 
+        # Update state to enforce semantics of closing.
+        self._closed = close if close is not None else self._closed
+
         stages = self._stages if stages is None else stages
         progress = self._progress if progress is None else progress
         close = self._close if close is None else close
@@ -109,18 +114,26 @@ class pool():
         return self.mapreduce(m, concat, xs, stages, progress, close)
 
     def close(self):
-        """Release resources."""
+        """Prevent any additional work to be added to the pool."""
+        self._closed = True
         self._pool.close()
 
     def closed(self):
         """Indicate whether the pool has been closed."""
-        return self._pool._state == 'CLOSE'
+        return self._closed or self._pool._state in ('CLOSE', 'TERMINATE')
+
+    def terminate(self):
+        """Terminate the pool."""
+        self._closed = True
+        self._terminated = True
+        self._pool.terminate()
 
     def cpu_count(self):
         """Return number of available CPUs."""
         return mp.cpu_count()
 
     def __len__(self):
+        """Return number of processes supplied as a configuration parameter."""
         return self._processes
 
 def mapreduce(m, r, xs, processes=None, stages=None, progress=None):

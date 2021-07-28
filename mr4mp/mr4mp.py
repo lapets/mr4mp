@@ -26,6 +26,7 @@ class pool():
     def __init__(self, processes=mp.cpu_count(), stages=None, progress=None, close=False):
         """Initialize a pool given the target number of processes."""
         if processes != 1:
+            # pylint: disable=consider-using-with
             self._pool = mp.Pool(processes=processes)
         self._processes = processes
         self._stages = stages

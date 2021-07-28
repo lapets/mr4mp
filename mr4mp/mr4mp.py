@@ -25,7 +25,8 @@ class pool():
     """
     def __init__(self, processes=mp.cpu_count(), stages=None, progress=None, close=False):
         """Initialize a pool given the target number of processes."""
-        self._pool = mp.Pool(processes=processes)
+        if processes != 1:
+            self._pool = mp.Pool(processes=processes)
         self._processes = processes
         self._stages = stages
         self._progress = progress
@@ -116,17 +117,22 @@ class pool():
     def close(self):
         """Prevent any additional work to be added to the pool."""
         self._closed = True
-        self._pool.close()
+        if self._processes != 1:
+            self._pool.close()
 
     def closed(self):
         """Indicate whether the pool has been closed."""
-        return self._closed or self._pool._state in ('CLOSE', 'TERMINATE')
+        if self._processes == 1:
+            return self._closed
+        else:
+            return self._closed or self._pool._state in ('CLOSE', 'TERMINATE')
 
     def terminate(self):
         """Terminate the pool."""
         self._closed = True
         self._terminated = True
-        self._pool.terminate()
+        if self._processes != 1:
+            self._pool.terminate()
 
     def cpu_count(self):
         """Return number of available CPUs."""

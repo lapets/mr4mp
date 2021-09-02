@@ -5,10 +5,19 @@ library.
 """
 
 import doctest
+import collections.abc
 import multiprocessing as mp
 from operator import concat
 from functools import reduce, partial
-from parts import parts
+import parts
+
+def _parts(xs, quantity):
+    """
+    Wrapper for partitioning function that returns a sized
+    list of parts if the original input iterable is sized.
+    """
+    xss = parts.parts(xs, quantity)
+    return list(xss) if isinstance(xss, collections.abc.Sized) else xss
 
 class pool():
     """
@@ -26,8 +35,7 @@ class pool():
     def __init__(self, processes=mp.cpu_count(), stages=None, progress=None, close=False):
         """Initialize a pool given the target number of processes."""
         if processes != 1:
-            # pylint: disable=consider-using-with
-            self._pool = mp.Pool(processes=processes)
+            self._pool = mp.Pool(processes=processes) # pylint: disable=consider-using-with
         self._processes = processes
         self._stages = stages
         self._progress = progress
@@ -57,7 +65,7 @@ class pool():
         else:
             return self._pool.map(
                 partial(map, op),
-                parts(xs, self._pool._processes)
+                parts.parts(xs, self._pool._processes)
             )
 
     def _reduce(self, op, xs_per_part):
@@ -90,15 +98,11 @@ class pool():
             result = self._reduce(r, self._map(m, xs))
         else:
             # Separate input into specified number of stages.
-            xss = parts(xs, stages)
-            xss = list(xss) if progress is not None else xss
-
-            # In case there is no progress function, create placeholder.
-            progress = progress if progress is not None else (lambda ss: ss)
+            xss = _parts(xs, stages)
 
             # Perform each stage sequentially.
             result = None
-            for xs_ in progress(xss):
+            for xs_ in (progress(xss) if progress is not None else xss):
                 result_stage = self._reduce(r, self._map(m, xs_))
                 result = result_stage if result is None else r(result, result_stage)
 
@@ -149,11 +153,11 @@ def mapreduce(m, r, xs, processes=None, stages=None, progress=None):
     or resource allocation is required from the user).
     """
     if processes == 1:
-        progress = progress if progress is not None else (lambda ss: ss)
         if stages is not None:
+            xss = _parts(xs, stages) # Create one part per stage.
             return reduce(r, [
                 m(x)
-                for xs in progress(list(parts(xs, stages)))
+                for xs in (progress(xss) if progress is not None else xss)
                 for x in xs
             ])
         else:

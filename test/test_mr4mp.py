@@ -1,3 +1,8 @@
+"""Functional unit tests for class, methods, and functions.
+
+Test suite containing functional unit tests for the exported class,
+methods, and standalone functions.
+"""
 from importlib import import_module
 from string import ascii_lowercase
 from hashlib import sha256
@@ -46,8 +51,8 @@ class log():
         self.logged = []
 
     def __call__(self, xs):
-        self.logged = xs
-        return xs
+        self.logged = list(xs)
+        return self.logged
 
     def to_list(self):
         return list(sorted([x for xs in self.logged for x in xs]))

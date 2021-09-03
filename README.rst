@@ -10,11 +10,11 @@ Thin MapReduce-like layer that wraps the Python multiprocessing library.
    :target: https://badge.fury.io/py/mr4mp
    :alt: PyPI version and link.
 
-.. |travis| image:: https://travis-ci.com/lapets/mr4mp.svg?branch=master
+.. |travis| image:: https://travis-ci.com/lapets/mr4mp.svg?branch=main
    :target: https://travis-ci.com/lapets/mr4mp
 
-.. |coveralls| image:: https://coveralls.io/repos/github/lapets/mr4mp/badge.svg?branch=master
-   :target: https://coveralls.io/github/lapets/mr4mp?branch=master
+.. |coveralls| image:: https://coveralls.io/repos/github/lapets/mr4mp/badge.svg?branch=main
+   :target: https://coveralls.io/github/lapets/mr4mp?branch=main
 
 Purpose
 -------

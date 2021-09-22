@@ -1,2 +1,2 @@
-"""Allow users to access symbols directly."""
+"""Gives users direct access to class and functions."""
 from mr4mp.mr4mp import pool, mapreduce, mapconcat

@@ -1,9 +1,7 @@
-"""MapReduce for multiprocessing.
-
+"""
 Thin MapReduce-like layer that wraps the Python multiprocessing
 library.
 """
-
 import doctest
 import collections.abc
 import multiprocessing as mp
@@ -19,23 +17,23 @@ def _parts(xs, quantity):
     xss = parts.parts(xs, quantity)
     return list(xss) if isinstance(xss, collections.abc.Sized) else xss
 
-class pool():
+class pool:
     """
     Class for a MapReduce-for-multiprocessing pool.
 
-    >>> len(pool()) == pool().cpu_count()
-    True
-    >>> def add_one(x):
-    ...     return [x + 1]
-    >>> with pool(1, close=True) as pool_:
-    ...     results = pool_.mapconcat(m=add_one, xs=range(3))
-    >>> results
-    [1, 2, 3]
+    >>> from operator import inv, add
+    >>> with pool() as pool_:
+    ...     results = pool_.mapreduce(m=inv, r=add, xs=range(3))
+    ...     results
+    -6
     """
     def __init__(self, processes=mp.cpu_count(), stages=None, progress=None, close=False):
-        """Initialize a pool given the target number of processes."""
+        """
+        Initialize a pool given the target number of processes.
+        """
         if processes != 1:
             self._pool = mp.Pool(processes=processes) # pylint: disable=consider-using-with
+
         self._processes = processes
         self._stages = stages
         self._progress = progress
@@ -83,7 +81,14 @@ class pool():
         Perform the map and reduce operations (optionally in stages on
         subsequences of the data) and then release resources if directed
         to do so.
+
+        >>> from operator import inv, add
+        >>> with pool() as pool_:
+        ...     pool_.mapreduce(m=inv, r=add, xs=range(3))
+        -6
         """
+        # A `ValueError` is returned to maintain consistency with the
+        # behavior of the underlying multiprocessing `Pool` object.
         if self.closed():
             raise ValueError('Pool not running')
 
@@ -116,41 +121,84 @@ class pool():
         """
         Perform the map operation (optionally in stages on subsequences
         of the data) and then release resources if directed to do so.
+
+        >>> with pool() as pool_:
+        ...     pool_.mapconcat(m=tuple, xs=[[1], [2], [3]])
+        (1, 2, 3)
         """
         return self.mapreduce(m, concat, xs, stages, progress, close)
 
     def close(self):
-        """Prevent any additional work to be added to the pool."""
+        """
+        Prevent any additional work from being added to the pool and release
+        resources associated with the pool.
+
+        >>> from operator import inv
+        >>> pool_ = pool()
+        >>> pool_.close()
+        >>> pool_.mapconcat(m=inv, xs=range(3))
+        Traceback (most recent call last):
+          ...
+        ValueError: Pool not running
+        """
         self._closed = True
         if self._processes != 1:
             self._pool.close()
 
     def closed(self):
-        """Indicate whether the pool has been closed."""
+        """
+        Return a boolean indicating whether the pool has been closed.
+
+        >>> pool_ = pool()
+        >>> pool_.close()
+        >>> pool_.closed()
+        True
+        """
         if self._processes == 1:
             return self._closed
         else:
             return self._closed or self._pool._state in ('CLOSE', 'TERMINATE')
 
     def terminate(self):
-        """Terminate the pool."""
+        """
+        Terminate the underlying multiprocessing pool (associated resources
+        will eventually be released, or they will be released when the pool
+        is closed).
+        """
         self._closed = True
         self._terminated = True
         if self._processes != 1:
             self._pool.terminate()
 
     def cpu_count(self):
-        """Return number of available CPUs."""
+        """
+        Return number of available CPUs.
+
+        >>> with pool() as pool_:
+        ...     isinstance(pool_.cpu_count(), int)
+        True
+        """
         return mp.cpu_count()
 
     def __len__(self):
-        """Return number of processes supplied as a configuration parameter."""
+        """
+        Return number of processes supplied as a configuration parameter
+        when the pool was created.
+
+        >>> with pool(1) as pool_:
+        ...     len(pool_)
+        1
+        """
         return self._processes
 
 def mapreduce(m, r, xs, processes=None, stages=None, progress=None):
     """
-    One-shot synonym (no explicit object management
-    or resource allocation is required from the user).
+    One-shot synonym for performing a workflow (no explicit object
+    management or resource allocation is required on the user's part).
+
+    >>> from operator import inv, add
+    >>> mapreduce(m=inv, r=add, xs=range(3))
+    -6
     """
     if processes == 1:
         if stages is not None:
@@ -168,8 +216,12 @@ def mapreduce(m, r, xs, processes=None, stages=None, progress=None):
 
 def mapconcat(m, xs, processes=None, stages=None, progress=None):
     """
-    One-shot synonym (no explicit object management
-    or resource allocation is required from the user).
+    One-shot synonym for applying an operation across an iterable
+    and assembling the results back into a list (no explicit object
+    management or resource allocation is required on the user's part).
+
+    >>> mapconcat(m=list, xs=[[1], [2], [3]])
+    [1, 2, 3]
     """
     return mapreduce(m, concat, xs, processes, stages=stages, progress=progress)
 

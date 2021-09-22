@@ -1,5 +1,4 @@
-"""Functional unit tests for class, methods, and functions.
-
+"""
 Test suite containing functional unit tests for the exported class,
 methods, and standalone functions.
 """

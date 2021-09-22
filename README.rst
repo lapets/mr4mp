@@ -18,11 +18,11 @@ Thin MapReduce-like layer that wraps the Python multiprocessing library.
 
 Purpose
 -------
-This package provides a streamlined interface for the built-in Python `multiprocessing <https://docs.python.org/3/library/multiprocessing.html>`_ library. The interface makes it possible to parallelize in a succinct way (sometimes using only one line of code) a data workflow that can be expressed in a `MapReduce <https://en.wikipedia.org/wiki/MapReduce>`_-like form. More background information about this package's design and implementation can be found in a `related article <https://github.com/python-supply/map-reduce-and-multiprocessing>`_.
+This package provides a streamlined interface for the built-in Python `multiprocessing <https://docs.python.org/3/library/multiprocessing.html>`_ library. The interface makes it possible to parallelize in a succinct way (sometimes using only one line of code) a data workflow that can be expressed in a `MapReduce <https://en.wikipedia.org/wiki/MapReduce>`_-like form. More background information about this package's design and implementation, as well a detailed use case, can be found in a `related article <https://github.com/python-supply/map-reduce-and-multiprocessing>`_.
 
 Package Installation and Usage
 ------------------------------
-The package is available on PyPI::
+The package is available on `PyPI <https://pypi.org/project/mr4mp/>`_::
 
     python -m pip install mr4mp
 
@@ -31,7 +31,7 @@ The library can be imported in the usual way::
     import mr4mp
 
 Word-Document Index Example
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Suppose we have some functions that we can use to build an index of randomly generated words::
 
@@ -71,17 +71,23 @@ After the above modification, we might see the following output from the code bl
 
 Testing and Conventions
 -----------------------
-All unit tests are executed and their coverage is measured when using `nose <https://nose.readthedocs.io/>`_ (see ``setup.cfg`` for configution details)::
+All unit tests are executed and their coverage is measured when using `nose <https://nose.readthedocs.io/>`_ (see ``setup.cfg`` for configuration details)::
 
+    python -m pip install nose coverage
     nosetests
+
+Some unit tests are included in the module itself and can be executed using `doctest <https://docs.python.org/3/library/doctest.html>`_::
+
+    python mr4mp/mr4mp.py -v
 
 Style conventions are enforced using `Pylint <https://www.pylint.org/>`_::
 
+    python -m pip install pylint
     pylint mr4mp
 
 Contributions
 -------------
-In order to contribute to the source code, open an issue or submit a pull request on the GitHub page for this library.
+In order to contribute to the source code, open an issue or submit a pull request on the `GitHub page <https://github.com/lapets/mr4mp>`_ for this library.
 
 Versioning
 ----------

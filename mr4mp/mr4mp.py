@@ -2,6 +2,8 @@
 Thin MapReduce-like layer that wraps the Python multiprocessing
 library.
 """
+from __future__ import annotations
+from typing import Optional
 import doctest
 import collections.abc
 import multiprocessing as mp
@@ -27,10 +29,18 @@ class pool:
     ...     results
     -6
     """
-    def __init__(self, processes=mp.cpu_count(), stages=None, progress=None, close=False):
+    def __init__(
+        self: pool,
+        processes: Optional[int] = None, stages: Optional[int] = None, progress=None,
+        close: Optional[bool] = False
+    ):
         """
         Initialize a pool given the target number of processes.
         """
+        # Use the maximum number of available processes as the default.
+        processes = mp.cpu_count() if processes is None else processes
+
+        # Only create a multiprocessing pool if necessary.
         if processes != 1:
             self._pool = mp.Pool(processes=processes) # pylint: disable=consider-using-with
 
@@ -41,19 +51,19 @@ class pool:
         self._closed = False
         self._terminated = False
 
-    def __enter__(self):
+    def __enter__(self: pool):
         """
         Placeholder to enable use of `with` construct.
         """
         return self
 
-    def __exit__(self, exc_type, exc_value, exc_traceback):
+    def __exit__(self: pool, exc_type, exc_value, exc_traceback):
         """
         Close the pool; exceptions are not suppressed.
         """
         self.close()
 
-    def _map(self, op, xs):
+    def _map(self: pool, op, xs):
         """
         Split data (one part per process) and map the operation
         onto each part.
@@ -66,7 +76,7 @@ class pool:
                 parts.parts(xs, self._pool._processes)
             )
 
-    def _reduce(self, op, xs_per_part):
+    def _reduce(self: pool, op, xs_per_part):
         """
         Apply the specified binary operator to the results
         obtained from multiple processes.
@@ -76,7 +86,10 @@ class pool:
         else:
             return reduce(op, self._pool.map(partial(reduce, op), xs_per_part))
 
-    def mapreduce(self, m, r, xs, stages=None, progress=None, close=None):
+    def mapreduce(
+        self: pool, m, r, xs,
+        stages: Optional[int] = None, progress=None, close: Optional[bool] = None
+    ):
         """
         Perform the map and reduce operations (optionally in stages on
         subsequences of the data) and then release resources if directed
@@ -117,7 +130,10 @@ class pool:
 
         return result
 
-    def mapconcat(self, m, xs, stages=None, progress=None, close=None):
+    def mapconcat(
+        self: pool, m, xs,
+        stages: Optional[int] = None, progress=None, close: Optional[bool] = None
+    ):
         """
         Perform the map operation (optionally in stages on subsequences
         of the data) and then release resources if directed to do so.
@@ -128,7 +144,7 @@ class pool:
         """
         return self.mapreduce(m, concat, xs, stages, progress, close)
 
-    def close(self):
+    def close(self: pool):
         """
         Prevent any additional work from being added to the pool and release
         resources associated with the pool.
@@ -145,7 +161,7 @@ class pool:
         if self._processes != 1:
             self._pool.close()
 
-    def closed(self):
+    def closed(self: pool) -> bool:
         """
         Return a boolean indicating whether the pool has been closed.
 
@@ -159,7 +175,7 @@ class pool:
         else:
             return self._closed or self._pool._state in ('CLOSE', 'TERMINATE')
 
-    def terminate(self):
+    def terminate(self: pool):
         """
         Terminate the underlying multiprocessing pool (associated resources
         will eventually be released, or they will be released when the pool
@@ -170,7 +186,7 @@ class pool:
         if self._processes != 1:
             self._pool.terminate()
 
-    def cpu_count(self):
+    def cpu_count(self: pool) -> int:
         """
         Return number of available CPUs.
 
@@ -180,7 +196,7 @@ class pool:
         """
         return mp.cpu_count()
 
-    def __len__(self):
+    def __len__(self: pool) -> int:
         """
         Return number of processes supplied as a configuration parameter
         when the pool was created.
@@ -191,7 +207,10 @@ class pool:
         """
         return self._processes
 
-def mapreduce(m, r, xs, processes=None, stages=None, progress=None):
+def mapreduce(
+    m, r, xs,
+    processes: Optional[int] = None, stages: Optional[int] = None, progress=None
+):
     """
     One-shot synonym for performing a workflow (no explicit object
     management or resource allocation is required on the user's part).
@@ -214,7 +233,10 @@ def mapreduce(m, r, xs, processes=None, stages=None, progress=None):
         pool_ = pool() if processes is None else pool(processes)
         return pool_.mapreduce(m, r, xs, stages=stages, progress=progress, close=True)
 
-def mapconcat(m, xs, processes=None, stages=None, progress=None):
+def mapconcat(
+    m, xs,
+    processes: Optional[int] = None, stages: Optional[int] = None, progress=None
+):
     """
     One-shot synonym for applying an operation across an iterable
     and assembling the results back into a list (no explicit object

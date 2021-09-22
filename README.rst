@@ -4,17 +4,23 @@ mr4mp
 
 Thin MapReduce-like layer that wraps the Python multiprocessing library.
 
-|pypi| |travis| |coveralls|
+|pypi| |readthedocs| |travis| |coveralls|
 
 .. |pypi| image:: https://badge.fury.io/py/mr4mp.svg
    :target: https://badge.fury.io/py/mr4mp
    :alt: PyPI version and link.
 
+.. |readthedocs| image:: https://readthedocs.org/projects/mr4mp/badge/?version=latest
+   :target: https://mr4mp.readthedocs.io/en/latest/?badge=latest
+   :alt: Read the Docs documentation status.
+
 .. |travis| image:: https://travis-ci.com/lapets/mr4mp.svg?branch=main
    :target: https://travis-ci.com/lapets/mr4mp
+   :alt: Travis CI build status.
 
 .. |coveralls| image:: https://coveralls.io/repos/github/lapets/mr4mp/badge.svg?branch=main
    :target: https://coveralls.io/github/lapets/mr4mp?branch=main
+   :alt: Coveralls test coverage summary.
 
 Purpose
 -------

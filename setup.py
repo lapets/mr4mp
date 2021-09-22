@@ -5,9 +5,9 @@ with open("README.rst", "r") as fh:
 
 setup(
     name="mr4mp",
-    version="2.0.0",
+    version="2.1.0",
     packages=["mr4mp",],
-    install_requires=["parts",],
+    install_requires=["parts~=1.1.0",],
     license="MIT",
     url="https://github.com/lapets/mr4mp",
     author="Andrei Lapets",

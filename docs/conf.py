@@ -21,8 +21,9 @@ project = 'mr4mp'
 copyright = '2018, Andrei Lapets' # Period omitted; precedes punctuation.
 author = 'Andrei Lapets'
 
-# The full version, including alpha/beta/rc tags
-release = '2.1.0'
+# The version number is retrieved from `setup.py` in the root directory.
+version = open('../setup.py').read().split('version = "')[1].split('"')[0]
+release = version
 
 
 # -- General configuration ---------------------------------------------------

@@ -8,7 +8,7 @@ name = "mr4mp"
 version = "2.2.0"
 
 setup(
-    name=name
+    name=name,
     version=version,
     packages=[name,],
     install_requires=["parts~=1.2",],

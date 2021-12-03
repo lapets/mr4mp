@@ -17,13 +17,15 @@ sys.path.insert(0, os.path.abspath('..'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'mr4mp'
-copyright = '2018, Andrei Lapets' # Period omitted; precedes punctuation.
-author = 'Andrei Lapets'
-
-# The version number is retrieved from `setup.py` in the root directory.
-version = open('../setup.py').read().split('version = "')[1].split('"')[0]
+# The name and version are retrieved from `setup.py` in the root directory.
+with open('../setup.py') as package_file:
+    package = package_file.read()
+project = package.split('name = "')[1].split('"')[0]
+version = package.split('version = "')[1].split('"')[0]
 release = version
+
+author = 'Andrei Lapets'
+copyright = '2018, Andrei Lapets' # Period omitted; precedes punctuation.
 
 
 # -- General configuration ---------------------------------------------------
@@ -44,6 +46,19 @@ templates_path = ['_templates']
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build']
+
+# Options to configure autodoc extension behavior.
+autodoc_member_order = 'bysource'
+autodoc_default_options = {
+    'special-members': True,
+    'exclude-members': ','.join([
+        '__weakref__',
+        '__module__',
+        '__hash__',
+        '__dict__'
+    ])
+}
+autodoc_preserve_defaults = True
 
 
 # -- Options for HTML output -------------------------------------------------

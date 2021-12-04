@@ -2,7 +2,7 @@ name: lint-test-cover-docs
 on:
   push
 jobs:
-  lint_test_docs:
+  build:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -21,24 +21,12 @@ jobs:
           pip install -U pylint coverage nose .
           python -m pylint mr4mp # Check against linting rules.
           python -m nose --cover-erase # Test using nose.
+      - name: Publish coverage results.
+        run: python -m coveralls --service=github # Submit to coveralls.
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.8'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Test auto-generation of documentation.
         run: |
           pip install -U -r docs/requirements.txt
           cd docs && sphinx-apidoc -f -E --templatedir=_templates -o _source .. ../setup.py && make html && cd ..
-  cover:
-    runs-on: ubuntu-latest
-    name: "Python 3.8 for Coveralls"
-    steps:
-      - uses: actions/checkout@v2
-      - name: Install Python.
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-          architecture: x64
-      - name: Generate and publish coverage.
-        run: |
-          pip install -U pylint coveralls nose .
-          python -m nose --cover-erase # Generate coverage report.
-          python -m coveralls --service=github # Submit to coveralls.
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

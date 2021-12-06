@@ -15,7 +15,7 @@ Thin MapReduce-like layer that wraps the Python multiprocessing library.
    :alt: Read the Docs documentation status.
 
 .. |actions| image:: https://github.com/lapets/mr4mp/workflows/lint-test-cover-docs/badge.svg
-   :target: https://github.com/lapets/bitlist/actions/workflows/lint-test-cover-docs.yml
+   :target: https://github.com/lapets/mr4mp/actions/workflows/lint-test-cover-docs.yml
    :alt: GitHub Actions status.
 
 .. |coveralls| image:: https://coveralls.io/repos/github/lapets/mr4mp/badge.svg?branch=main

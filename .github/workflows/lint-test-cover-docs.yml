@@ -2,7 +2,7 @@ name: lint-test-cover-docs
 on:
   push
 jobs:
-  build:
+  lint_test_cover_docs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -22,7 +22,9 @@ jobs:
           python -m pylint mr4mp # Check against linting rules.
           python -m nose --cover-erase # Test using nose.
       - name: Publish coverage results.
-        run: python -m coveralls --service=github # Submit to coveralls.
+        run: |
+          pip install -U pylint coveralls
+          python -m coveralls --service=github # Submit to coveralls.
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.8'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

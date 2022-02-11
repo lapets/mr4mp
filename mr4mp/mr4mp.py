@@ -38,7 +38,12 @@ class pool:
         Initialize a pool given the target number of processes.
         """
         # Use the maximum number of available processes as the default.
-        processes = mp.cpu_count() if processes is None else processes
+        # If a negative number of processes is designated, wrap around
+        # and subtract from the maximum.
+        if isinstance(processes, int) and processes <= 0:
+            processes = mp.cpu_count() + processes
+        elif processes is None:
+            processes = mp.cpu_count()
 
         # Only create a multiprocessing pool if necessary.
         if processes != 1:

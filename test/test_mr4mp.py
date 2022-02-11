@@ -191,6 +191,11 @@ class Test_pool(TestCase):
         self.assertEqual(len(pool), mp.cpu_count())
         pool.close()
 
+    def test_pool_init_negative(self):
+        pool = mr4mp.pool(-1)
+        self.assertEqual(len(pool), mp.cpu_count() - 1)
+        pool.close()
+
     def test_pool_mapreduce(self):
         pool = mr4mp.pool(close=True)
         print("Starting.")

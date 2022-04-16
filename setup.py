@@ -5,13 +5,13 @@ with open("README.rst", "r") as fh:
 
 # The lines below can be parsed by `docs/conf.py`.
 name = "mr4mp"
-version = "2.3.0"
+version = "2.4.0"
 
 setup(
     name=name,
     version=version,
     packages=[name,],
-    install_requires=["parts~=1.2",],
+    install_requires=["parts~=1.3",],
     license="MIT",
     url="https://github.com/lapets/mr4mp",
     author="Andrei Lapets",

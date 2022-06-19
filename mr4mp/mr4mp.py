@@ -3,7 +3,7 @@ Thin MapReduce-like layer that wraps the Python multiprocessing
 library.
 """
 from __future__ import annotations
-from typing import Optional
+from typing import Any, Optional, Callable, Sequence, Iterable
 import doctest
 import collections.abc
 import multiprocessing
@@ -11,7 +11,7 @@ from operator import concat
 from functools import reduce, partial
 import parts
 
-def _parts(xs, quantity):
+def _parts(xs: Iterable, quantity: int) -> Sequence:
     """
     Wrapper for the partitioning function :obj:`~parts.parts.parts`. This
     wrapper returns a :obj:`~collections.abc.Sized` list of parts if the
@@ -22,7 +22,13 @@ def _parts(xs, quantity):
 
 class pool:
     """
-    Class for a MapReduce-for-multiprocessing pool.
+    Class for a MapReduce-for-multiprocessing resource pool that can be used to
+    run MapReduce-like workflows across multiple processes.
+
+    :param processes: Number of processes to allocate and to employ in executing workflows.
+    :param stages: Number of stages (progress updates are provided once per stage).
+    :param progress: Function that wraps an iterable (can be used to also report progress).
+    :param close: Flag indicating whether this instance should be closed after one workflow.
 
     >>> from operator import inv, add
     >>> with pool() as pool_:
@@ -32,7 +38,9 @@ class pool:
     """
     def __init__(
             self: pool,
-            processes: Optional[int] = None, stages: Optional[int] = None, progress=None,
+            processes: Optional[int] = None,
+            stages: Optional[int] = None,
+            progress: Optional[Callable[[Iterable], Iterable]] = None,
             close: Optional[bool] = False
         ):
         """
@@ -64,13 +72,13 @@ class pool:
         """
         return self
 
-    def __exit__(self: pool, exc_type, exc_value, exc_traceback):
+    def __exit__(self: pool, *exc_details):
         """
         Close this instance; exceptions are not suppressed.
         """
         self.close()
 
-    def _map(self: pool, op, xs):
+    def _map(self: pool, op: Callable, xs: Iterable):
         """
         Split data (one part per process) and map the operation
         onto each part.
@@ -83,7 +91,7 @@ class pool:
             parts.parts(xs, self._pool._processes) # pylint: disable=W0212
         )
 
-    def _reduce(self: pool, op, xs_per_part):
+    def _reduce(self: pool, op: Callable, xs_per_part: Iterable):
         """
         Apply the specified binary operator to the results
         obtained from multiple processes.
@@ -94,13 +102,31 @@ class pool:
         return reduce(op, self._pool.map(partial(reduce, op), xs_per_part))
 
     def mapreduce(
-            self: pool, m, r, xs,
-            stages: Optional[int] = None, progress=None, close: Optional[bool] = None
+            self: pool,
+            m: Callable[..., Any],
+            r: Callable[..., Any],
+            xs: Iterable,
+            stages: Optional[int] = None,
+            progress: Optional[Callable[[Iterable], Iterable]] = None,
+            close: Optional[bool] = None
         ):
         """
         Perform the map operation ``m`` and the reduce operation ``r`` over the
         supplied inputs ``xs`` (optionally in stages on subsequences of the data)
         and then release resources if directed to do so.
+
+        :param m: Operation to be applied to each element in the input iterable.
+        :param r: Operation that can combine two outputs from itself, the map operation, or a mix.
+        :param xs: Input to process using the map and reduce operations.
+        :param stages: Number of stages (progress updates are provided once per stage).
+        :param progress: Function that wraps an iterable (can be used to also report progress).
+        :param close: Flag indicating whether this instance should be closed after one workflow.
+
+        The ``stages``, ``progress``, and ``close`` parameter values each revert by
+        default to those of this :obj:`pool` instance if they are not explicitly
+        supplied. Supplying a value for any one of these parameters when invoking
+        this method overrides this instance's value for that parameter *only during
+        that invocation of the method* (this instance's value does not change).
 
         >>> from operator import inv, add
         >>> with pool() as pool_:
@@ -138,13 +164,33 @@ class pool:
         return result
 
     def mapconcat(
-            self: pool, m, xs,
-            stages: Optional[int] = None, progress=None, close: Optional[bool] = None
+            self: pool,
+            m: Callable[..., Sequence],
+            xs: Iterable,
+            stages: Optional[int] = None,
+            progress: Optional[Callable[[Iterable], Iterable]] = None,
+            close: Optional[bool] = None
         ):
         """
-        Perform the map operation ``m`` over the supplied inputs ``xs``
-        (optionally in stages on subsequences of the data) and then release
-        resources if directed to do so.
+        Perform the map operation ``m`` over the elements in the iterable
+        ``xs`` (optionally in stages on subsequences of the data) and then
+        release resources if directed to do so.
+
+        :param m: Operation to be applied to each element in the input iterable.
+        :param xs: Input to process using the map operation.
+        :param stages: Number of stages (progress updates are provided once per stage).
+        :param progress: Function that wraps an iterable (can be used to also report progress).
+        :param close: Flag indicating whether this instance should be closed after one workflow.
+
+        In contrast to the :obj:`pool.mapreduce` method, the map operation ``m``
+        *must return a* :obj:`~collections.abc.Sequence`, as the results of this operation are
+        combined using :obj:`operator.concat`.
+
+        The ``stages``, ``progress``, and ``close`` parameter values each revert by
+        default to those of this :obj:`pool` instance if they are not explicitly
+        supplied. Supplying a value for any one of these parameters when invoking
+        this method overrides this instance's value for that parameter *only during
+        that invocation of the method* (this instance's value does not change).
 
         >>> with pool() as pool_:
         ...     pool_.mapconcat(m=tuple, xs=[[1], [2], [3]])
@@ -222,12 +268,23 @@ class pool:
         return self._processes
 
 def mapreduce(
-        m, r, xs,
-        processes: Optional[int] = None, stages: Optional[int] = None, progress=None
+        m: Callable[..., Any],
+        r: Callable[..., Any],
+        xs: Iterable,
+        processes: Optional[int] = None,
+        stages: Optional[int] = None,
+        progress: Optional[Callable[[Iterable], Iterable]] = None
     ):
     """
-    One-shot synonym for performing a workflow (no explicit object
+    One-shot function for performing a workflow (no explicit object
     management or resource allocation is required on the user's part).
+
+    :param m: Operation to be applied to each element in the input iterable.
+    :param r: Operation that can combine two outputs from itself, the map operation, or a mix.
+    :param xs: Input to process using the map and reduce operations.
+    :param processes: Number of processes to allocate and to employ in executing the workflow.
+    :param stages: Number of stages (progress updates are provided once per stage).
+    :param progress: Function that wraps an iterable (can be used to also report progress).
 
     >>> from operator import inv, add
     >>> mapreduce(m=inv, r=add, xs=range(3))
@@ -248,13 +305,26 @@ def mapreduce(
     return pool_.mapreduce(m, r, xs, stages=stages, progress=progress, close=True)
 
 def mapconcat(
-        m, xs,
-        processes: Optional[int] = None, stages: Optional[int] = None, progress=None
+        m: Callable[..., Sequence],
+        xs: Iterable,
+        processes: Optional[int] = None,
+        stages: Optional[int] = None,
+        progress: Optional[Callable[[Iterable], Iterable]] = None
     ):
     """
-    One-shot synonym for applying an operation across an iterable and
+    One-shot function for applying an operation across an iterable and
     assembling the results back into a :obj:`list` (no explicit object
     management or resource allocation is required on the user's part).
+
+    :param m: Operation to be applied to each element in the input iterable.
+    :param xs: Input to process using the map and reduce operations.
+    :param processes: Number of processes to allocate and to employ in executing the workflow.
+    :param stages: Number of stages (progress updates are provided once per stage).
+    :param progress: Function that wraps an iterable (can be used to also report progress).
+
+    In contrast to the :obj:`mapreduce` function, the map operation ``m``
+    *must return a* :obj:`~collections.abc.Sequence`, as the results of this operation are
+    combined using :obj:`operator.concat`.
 
     >>> mapconcat(m=list, xs=[[1], [2], [3]])
     [1, 2, 3]

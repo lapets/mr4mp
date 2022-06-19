@@ -38,7 +38,8 @@ extensions = [
     'sphinx.ext.doctest',
     'sphinx.ext.napoleon',
     'sphinx.ext.intersphinx',
-    'sphinx.ext.viewcode'
+    'sphinx.ext.viewcode',
+    'sphinx_autodoc_typehints'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -57,16 +58,21 @@ autodoc_default_options = {
         '__weakref__',
         '__module__',
         '__hash__',
-        '__dict__'
+        '__dict__',
+        '__init__'
     ])
 }
+autodoc_typehints = 'description'
+autodoc_typehints_description_target = 'documented'
 autodoc_preserve_defaults = True
 
-# Allow references to classes defined in the Python documentation.
+# Allow references/links to definitions found in the Python documentation
+# and dependencies.
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
     'parts': ('https://parts.readthedocs.io/en/latest', None),
 }
+
 
 # -- Options for HTML output -------------------------------------------------
 

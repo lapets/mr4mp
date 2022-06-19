@@ -77,11 +77,11 @@ class pool:
         """
         if self._processes == 1:
             return [[op(x) for x in xs]]
-        else:
-            return self._pool.map(
-                partial(map, op),
-                parts.parts(xs, self._pool._processes)
-            )
+
+        return self._pool.map(
+            partial(map, op),
+            parts.parts(xs, self._pool._processes) # pylint: disable=W0212
+        )
 
     def _reduce(self: pool, op, xs_per_part):
         """
@@ -90,8 +90,8 @@ class pool:
         """
         if self._processes == 1 and len(xs_per_part) == 1:
             return reduce(op, map(partial(reduce, op), xs_per_part))
-        else:
-            return reduce(op, self._pool.map(partial(reduce, op), xs_per_part))
+
+        return reduce(op, self._pool.map(partial(reduce, op), xs_per_part))
 
     def mapreduce(
             self: pool, m, r, xs,
@@ -180,8 +180,10 @@ class pool:
         """
         if self._processes == 1:
             return self._closed
-        else:
-            return self._closed or self._pool._state in ('CLOSE', 'TERMINATE')
+
+        return ( # pylint: disable=W0212
+            self._closed or self._pool._state in ('CLOSE', 'TERMINATE')
+        )
 
     def terminate(self: pool):
         """
@@ -239,11 +241,11 @@ def mapreduce(
                 for xs in (progress(xss) if progress is not None else xss)
                 for x in xs
             ])
-        else:
-            return reduce(r, [m(x) for x in xs])
-    else:
-        pool_ = pool() if processes is None else pool(processes)
-        return pool_.mapreduce(m, r, xs, stages=stages, progress=progress, close=True)
+
+        return reduce(r, [m(x) for x in xs])
+
+    pool_ = pool() if processes is None else pool(processes)
+    return pool_.mapreduce(m, r, xs, stages=stages, progress=progress, close=True)
 
 def mapconcat(
         m, xs,

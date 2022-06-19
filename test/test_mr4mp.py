@@ -19,6 +19,7 @@ def api_methods():
     return {'pool', 'mapreduce', 'mapconcat'}
 
 class Test_namespace(TestCase):
+    # pylint: disable=C0116 # Method docstrings are not included.
     """
     Check that the exported namespace provide access to the expected
     classes and functions.
@@ -27,13 +28,13 @@ class Test_namespace(TestCase):
         module = import_module('mr4mp.mr4mp')
         self.assertTrue(api_methods().issubset(module.__dict__.keys()))
 
-def word(id, k):
+def word(identifier, k):
     """Create a random three-character word."""
-    return ''.join(ascii_lowercase[i % 7] for i in sha256(bytes(id * k)).digest()[:3])
+    return ''.join(ascii_lowercase[i % 7] for i in sha256(bytes(identifier * k)).digest()[:3])
 
-def index(id):
+def index(identifier):
     """Given an index value, make 25 words that map to it."""
-    return {w:{id} for w in {word(id, k) for k in range(25)}}
+    return {w:{identifier} for w in {word(identifier, k) for k in range(25)}}
 
 def merge(i, j):
     """Merge two word counts."""
@@ -42,10 +43,18 @@ def merge(i, j):
 result_reference = reduce(merge, map(index, range(50)))
 
 def add_one(x):
+    """
+    Simple function defined within module (and not within a method body)
+    so that tests that use multiple processes can invoke it.
+    """
     return [x + 1]
 
 class log():
-    """Log of progress function outputs."""
+    # pylint: disable=C0116 # Method docstrings are not included.
+    """
+    Log of progress function outputs that can be used for testing progress update
+    features.
+    """
     def __init__(self):
         self.logged = []
 
@@ -62,6 +71,10 @@ def define_class_pool_close(processes):
     behavior configuration.
     """
     class Test_pool_close(TestCase):
+        # pylint: disable=C0116 # Method docstrings are not included.
+        """
+        Tests of behavior of method that closes an instance.
+        """
         def test_pool_mapreduce_pool_close(self):
             pool = mr4mp.pool(processes, close=True)
             self.assertFalse(pool.closed())
@@ -100,15 +113,15 @@ def define_class_pool_close(processes):
 
         def test_pool_mapreduce_pool_close_reuse_exception(self):
             pool = mr4mp.pool(processes, close=True)
-            result = pool.mapreduce(index, merge, range(50))
+            pool.mapreduce(index, merge, range(50))
             with self.assertRaises(ValueError):
-                result = pool.mapreduce(index, merge, range(50))
+                pool.mapreduce(index, merge, range(50))
 
         def test_pool_mapreduce_function_close_reuse_exception(self):
             pool = mr4mp.pool(processes, close=False)
-            result = pool.mapreduce(index, merge, range(50), close=True)
+            pool.mapreduce(index, merge, range(50), close=True)
             with self.assertRaises(ValueError):
-                result = pool.mapreduce(index, merge, range(50))
+                pool.mapreduce(index, merge, range(50))
 
         def test_pool_mapreduce_many_with_as(self):
             with mr4mp.pool(processes) as pool:
@@ -126,6 +139,11 @@ def define_class_pool_stages_progress(processes, stages, progress):
     and progress function configuration.
     """
     class Test_pool_stages_progress(TestCase):
+        # pylint: disable=C0116 # Method docstrings are not included.
+        """
+        Tests of feature that allows a workflow to be broken down into stages,
+        with progress being reported at the end of each stage.
+        """
         def test_pool_mapreduce(self):
             logger = log() if progress else None
             pool = mr4mp.pool(processes, close=True)
@@ -156,6 +174,10 @@ def define_class_functions(processes, stages, progress):
     for the given configuration.
     """
     class Test_functions(TestCase):
+        # pylint: disable=C0116 # Method docstrings are not included.
+        """
+        Tests of one-shot functions for executing workflows.
+        """
         def test_mapreduce(self):
             logger = log() if progress else None
             result = mr4mp.mapreduce(
@@ -185,6 +207,10 @@ def define_class_functions(processes, stages, progress):
     return Test_functions
 
 class Test_pool(TestCase):
+    # pylint: disable=C0116 # Method docstrings are not included.
+    """
+    Tests of resource pool instance methods.
+    """
     def test_pool_cpu_count(self):
         pool = mr4mp.pool()
         self.assertEqual(pool.cpu_count(), mp.cpu_count())
@@ -218,15 +244,15 @@ class Test_pool(TestCase):
 
 # The instantiated test classes below are discovered in the local scope
 # and executed by the unit testing framework (e.g., using nosetests).
-for processes in (1, 2):
-    locals()['Test_pool_close_' + str(processes)] = define_class_pool_close(processes)
-    for stages in (None, 4):
-        for progress in (False, True):
+for _processes in (1, 2):
+    locals()['Test_pool_close_' + str(_processes)] = define_class_pool_close(_processes)
+    for _stages in (None, 4):
+        for _progress in (False, True):
             locals()[
                 'Test_pool_stages_progress_' +\
-                "_".join(map(str, [processes, stages, progress]))
-            ] = define_class_pool_stages_progress(processes, stages, progress)
+                "_".join(map(str, [_processes, _stages, _progress]))
+            ] = define_class_pool_stages_progress(_processes, _stages, _progress)
             locals()[
                 'Test_functions_' +\
-                "_".join(map(str, [processes, stages, progress]))
-            ] = define_class_functions(processes, stages, progress)
+                "_".join(map(str, [_processes, _stages, _progress]))
+            ] = define_class_functions(_processes, _stages, _progress)

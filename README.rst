@@ -47,8 +47,8 @@ Suppose we have some functions that we can use to build an index of randomly gen
     def word(): # Generate a random 7-letter "word".
         return ''.join(choice(ascii_lowercase) for _ in range(7))
     
-    def index(id): # Build an index mapping some random words to an identifier.
-        return {w:{id} for w in {word() for _ in range(100)}}
+    def index(identifier): # Build an index mapping some random words to an identifier.
+        return {w:{identifier} for w in {word() for _ in range(100)}}
     
     def merge(i, j): # Merge two index dictionaries i and j.
         return {k:(i.get(k,set()) | j.get(k,set())) for k in i.keys() | j.keys()}
@@ -105,7 +105,7 @@ Some unit tests are included in the module itself and can be executed using `doc
 Style conventions are enforced using `Pylint <https://www.pylint.org>`__::
 
     python -m pip install .[lint]
-    python -m pylint mr4mp
+    python -m pylint mr4mp ./test/test_mr4mp.py
 
 Contributions
 ^^^^^^^^^^^^^

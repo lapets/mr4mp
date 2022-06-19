@@ -36,7 +36,9 @@ copyright = '2018, Andrei Lapets' # Period omitted; precedes punctuation.
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
-    'sphinx.ext.napoleon'
+    'sphinx.ext.napoleon',
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.viewcode'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -60,6 +62,11 @@ autodoc_default_options = {
 }
 autodoc_preserve_defaults = True
 
+# Allow references to classes defined in the Python documentation.
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3', None),
+    'parts': ('https://parts.readthedocs.io/en/latest', None),
+}
 
 # -- Options for HTML output -------------------------------------------------
 

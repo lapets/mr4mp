@@ -6,15 +6,16 @@ from __future__ import annotations
 from typing import Optional
 import doctest
 import collections.abc
-import multiprocessing as mp
+import multiprocessing
 from operator import concat
 from functools import reduce, partial
 import parts
 
 def _parts(xs, quantity):
     """
-    Wrapper for partitioning function that returns a sized
-    list of parts if the original input iterable is sized.
+    Wrapper for the partitioning function :obj:`~parts.parts.parts`. This
+    wrapper returns a :obj:`~collections.abc.Sized` list of parts if the
+    original input iterable is :obj:`~collections.abc.Sized`.
     """
     xss = parts.parts(xs, quantity)
     return list(xss) if isinstance(xss, collections.abc.Sized) else xss
@@ -30,24 +31,25 @@ class pool:
     -6
     """
     def __init__(
-        self: pool,
-        processes: Optional[int] = None, stages: Optional[int] = None, progress=None,
-        close: Optional[bool] = False
-    ):
+            self: pool,
+            processes: Optional[int] = None, stages: Optional[int] = None, progress=None,
+            close: Optional[bool] = False
+        ):
         """
-        Initialize a pool given the target number of processes.
+        Initialize a :obj:`pool` instance given the target number of processes.
         """
         # Use the maximum number of available processes as the default.
         # If a negative number of processes is designated, wrap around
         # and subtract from the maximum.
         if isinstance(processes, int) and processes <= 0:
-            processes = mp.cpu_count() + processes
+            processes = multiprocessing.cpu_count() + processes
         elif processes is None:
-            processes = mp.cpu_count()
+            processes = multiprocessing.cpu_count()
 
         # Only create a multiprocessing pool if necessary.
         if processes != 1:
-            self._pool = mp.Pool(processes=processes) # pylint: disable=consider-using-with
+            # pylint: disable=consider-using-with
+            self._pool = multiprocessing.Pool(processes=processes)
 
         self._processes = processes
         self._stages = stages
@@ -58,13 +60,13 @@ class pool:
 
     def __enter__(self: pool):
         """
-        Placeholder to enable use of `with` construct.
+        Placeholder to enable use of ``with`` construct.
         """
         return self
 
     def __exit__(self: pool, exc_type, exc_value, exc_traceback):
         """
-        Close the pool; exceptions are not suppressed.
+        Close this instance; exceptions are not suppressed.
         """
         self.close()
 
@@ -92,21 +94,21 @@ class pool:
             return reduce(op, self._pool.map(partial(reduce, op), xs_per_part))
 
     def mapreduce(
-        self: pool, m, r, xs,
-        stages: Optional[int] = None, progress=None, close: Optional[bool] = None
-    ):
+            self: pool, m, r, xs,
+            stages: Optional[int] = None, progress=None, close: Optional[bool] = None
+        ):
         """
-        Perform the map and reduce operations (optionally in stages on
-        subsequences of the data) and then release resources if directed
-        to do so.
+        Perform the map operation ``m`` and the reduce operation ``r`` over the
+        supplied inputs ``xs`` (optionally in stages on subsequences of the data)
+        and then release resources if directed to do so.
 
         >>> from operator import inv, add
         >>> with pool() as pool_:
         ...     pool_.mapreduce(m=inv, r=add, xs=range(3))
         -6
         """
-        # A `ValueError` is returned to maintain consistency with the
-        # behavior of the underlying multiprocessing `Pool` object.
+        # A :obj:`ValueError` is returned to maintain consistency with the
+        # behavior of the underlying :obj:`multiprocessing` ``Pool`` object.
         if self.closed():
             raise ValueError('Pool not running')
 
@@ -136,12 +138,13 @@ class pool:
         return result
 
     def mapconcat(
-        self: pool, m, xs,
-        stages: Optional[int] = None, progress=None, close: Optional[bool] = None
-    ):
+            self: pool, m, xs,
+            stages: Optional[int] = None, progress=None, close: Optional[bool] = None
+        ):
         """
-        Perform the map operation (optionally in stages on subsequences
-        of the data) and then release resources if directed to do so.
+        Perform the map operation ``m`` over the supplied inputs ``xs``
+        (optionally in stages on subsequences of the data) and then release
+        resources if directed to do so.
 
         >>> with pool() as pool_:
         ...     pool_.mapconcat(m=tuple, xs=[[1], [2], [3]])
@@ -151,8 +154,8 @@ class pool:
 
     def close(self: pool):
         """
-        Prevent any additional work from being added to the pool and release
-        resources associated with the pool.
+        Prevent any additional work from being added to this instance and
+        release resources associated with this instance.
 
         >>> from operator import inv
         >>> pool_ = pool()
@@ -168,7 +171,7 @@ class pool:
 
     def closed(self: pool) -> bool:
         """
-        Return a boolean indicating whether the pool has been closed.
+        Return a boolean indicating whether this instance has been closed.
 
         >>> pool_ = pool()
         >>> pool_.close()
@@ -182,9 +185,13 @@ class pool:
 
     def terminate(self: pool):
         """
-        Terminate the underlying multiprocessing pool (associated resources
-        will eventually be released, or they will be released when the pool
-        is closed).
+
+        .. |Pool| replace:: ``Pool``
+        .. _Pool: https://docs.python.org/3/library/multiprocessing.html#using-a-pool-of-workers
+
+        Terminate the underlying :obj:`multiprocessing` |Pool|_ instance
+        (associated resources will eventually be released, or they will be
+        released when the instance is closed).
         """
         self._closed = True
         self._terminated = True
@@ -199,12 +206,12 @@ class pool:
         ...     isinstance(pool_.cpu_count(), int)
         True
         """
-        return mp.cpu_count()
+        return multiprocessing.cpu_count()
 
     def __len__(self: pool) -> int:
         """
         Return number of processes supplied as a configuration parameter
-        when the pool was created.
+        when this instance was created.
 
         >>> with pool(1) as pool_:
         ...     len(pool_)
@@ -213,9 +220,9 @@ class pool:
         return self._processes
 
 def mapreduce(
-    m, r, xs,
-    processes: Optional[int] = None, stages: Optional[int] = None, progress=None
-):
+        m, r, xs,
+        processes: Optional[int] = None, stages: Optional[int] = None, progress=None
+    ):
     """
     One-shot synonym for performing a workflow (no explicit object
     management or resource allocation is required on the user's part).
@@ -239,12 +246,12 @@ def mapreduce(
         return pool_.mapreduce(m, r, xs, stages=stages, progress=progress, close=True)
 
 def mapconcat(
-    m, xs,
-    processes: Optional[int] = None, stages: Optional[int] = None, progress=None
-):
+        m, xs,
+        processes: Optional[int] = None, stages: Optional[int] = None, progress=None
+    ):
     """
-    One-shot synonym for applying an operation across an iterable
-    and assembling the results back into a list (no explicit object
+    One-shot synonym for applying an operation across an iterable and
+    assembling the results back into a :obj:`list` (no explicit object
     management or resource allocation is required on the user's part).
 
     >>> mapconcat(m=list, xs=[[1], [2], [3]])

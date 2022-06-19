@@ -26,8 +26,8 @@ Purpose
 -------
 This package provides a streamlined interface for the built-in Python `multiprocessing <https://docs.python.org/3/library/multiprocessing.html>`__ library. The interface makes it possible to parallelize in a succinct way (sometimes using only one line of code) a data workflow that can be expressed in a `MapReduce <https://en.wikipedia.org/wiki/MapReduce>`__-like form. More background information about this package's design and implementation, as well a detailed use case, can be found in a `related article <https://github.com/python-supply/map-reduce-and-multiprocessing>`__.
 
-Package Installation and Usage
-------------------------------
+Installation and Usage
+----------------------
 This library is available as a `package on PyPI <https://pypi.org/project/mr4mp>`__::
 
     python -m pip install mr4mp
@@ -75,21 +75,27 @@ After the above modification, we might see the following output from the code bl
 
     Finished in 2.23329004518571s using 1 process(es).
 
+Development
+-----------
+All installation and development dependencies are managed using `setuptools <https://pypi.org/project/setuptools>`__ and are fully specified in ``setup.py``. The ``extras_require`` parameter is used to `specify optional requirements <https://setuptools.pypa.io/en/latest/userguide/dependency_management.html#optional-dependencies>`__ for various development tasks. This makes it possible to specify additional options (such as ``docs``, ``lint``, and so on) when performing installation using `pip <https://pypi.org/project/pip>`__::
+
+    python -m pip install .[docs,lint]
+
 Documentation
--------------
+^^^^^^^^^^^^^
 .. include:: toc.rst
 
 The documentation can be generated automatically from the source files using `Sphinx <https://www.sphinx-doc.org>`__::
 
+    python -m pip install .[docs]
     cd docs
-    python -m pip install -r requirements.txt
     sphinx-apidoc -f -E --templatedir=_templates -o _source .. ../setup.py && make html
 
 Testing and Conventions
------------------------
+^^^^^^^^^^^^^^^^^^^^^^^
 All unit tests are executed and their coverage is measured when using `pytest <https://docs.pytest.org>`__ (see ``setup.cfg`` for configuration details)::
 
-    python -m pip install pytest pytest-cov
+    python -m pip install .[test]
     python -m pytest
 
 Some unit tests are included in the module itself and can be executed using `doctest <https://docs.python.org/3/library/doctest.html>`__::
@@ -98,26 +104,28 @@ Some unit tests are included in the module itself and can be executed using `doc
 
 Style conventions are enforced using `Pylint <https://www.pylint.org>`__::
 
-    python -m pip install pylint
+    python -m pip install .[lint]
     python -m pylint mr4mp
 
 Contributions
--------------
+^^^^^^^^^^^^^
 In order to contribute to the source code, open an issue or submit a pull request on the `GitHub page <https://github.com/lapets/mr4mp>`__ for this library.
 
 Versioning
-----------
+^^^^^^^^^^
 Beginning with version 0.1.0, the version number format for this library and the changes to the library associated with version number increments conform with `Semantic Versioning 2.0.0 <https://semver.org/#semantic-versioning-200>`__.
 
 Publishing
-----------
-This library can be published as a `package on PyPI <https://pypi.org/project/mr4mp>`__ by a package maintainer. Install the `wheel <https://pypi.org/project/wheel>`__ package, remove any old build/distribution files, and package the source into a distribution archive::
+^^^^^^^^^^
+This library can be published as a `package on PyPI <https://pypi.org/project/mr4mp>`__ by a package maintainer. First, install the dependencies required for packaging and publishing::
 
-    python -m pip install wheel
+    python -m pip install .[publish]
+
+Remove any old build/distribution files. Then, package the source into a distribution archive using the `wheel <https://pypi.org/project/wheel>`__ package::
+
     rm -rf dist *.egg-info
     python setup.py sdist bdist_wheel
 
-Next, install the `twine <https://pypi.org/project/twine>`__ package and upload the package distribution archive to PyPI::
+Finally, upload the package distribution archive to `PyPI <https://pypi.org>`__ using the `twine <https://pypi.org/project/twine>`__ package::
 
-    python -m pip install twine
     python -m twine upload dist/*

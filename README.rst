@@ -77,23 +77,21 @@ After the above modification, we might see the following output from the code bl
 
 Development
 -----------
-All installation and development dependencies are managed using `setuptools <https://pypi.org/project/setuptools>`__ and are fully specified in ``setup.py``. The ``extras_require`` parameter is used to `specify optional requirements <https://setuptools.pypa.io/en/latest/userguide/dependency_management.html#optional-dependencies>`__ for various development tasks. This makes it possible to specify additional options (such as ``docs``, ``lint``, and so on) when performing installation using `pip <https://pypi.org/project/pip>`__::
+All installation and development dependencies are fully specified in ``pyproject.toml``. The ``project.optional-dependencies`` object is used to `specify optional requirements <https://peps.python.org/pep-0621>`__ for various development tasks. This makes it possible to specify additional options (such as ``docs``, ``lint``, and so on) when performing installation using `pip <https://pypi.org/project/pip>`__::
 
     python -m pip install .[docs,lint]
 
 Documentation
 ^^^^^^^^^^^^^
-.. include:: toc.rst
-
 The documentation can be generated automatically from the source files using `Sphinx <https://www.sphinx-doc.org>`__::
 
     python -m pip install .[docs]
     cd docs
-    sphinx-apidoc -f -E --templatedir=_templates -o _source .. ../setup.py && make html
+    sphinx-apidoc -f -E --templatedir=_templates -o _source .. && make html
 
 Testing and Conventions
 ^^^^^^^^^^^^^^^^^^^^^^^
-All unit tests are executed and their coverage is measured when using `pytest <https://docs.pytest.org>`__ (see ``setup.cfg`` for configuration details)::
+All unit tests are executed and their coverage is measured when using `pytest <https://docs.pytest.org>`__ (see the ``pyproject.toml`` file for configuration details)::
 
     python -m pip install .[test]
     python -m pytest
@@ -102,10 +100,10 @@ Some unit tests are included in the module itself and can be executed using `doc
 
     python mr4mp/mr4mp.py -v
 
-Style conventions are enforced using `Pylint <https://www.pylint.org>`__::
+Style conventions are enforced using `Pylint <https://pylint.pycqa.org>`__::
 
     python -m pip install .[lint]
-    python -m pylint mr4mp ./test/test_mr4mp.py
+    python -m pylint mr4mp test/test_mr4mp.py
 
 Contributions
 ^^^^^^^^^^^^^
@@ -121,10 +119,15 @@ This library can be published as a `package on PyPI <https://pypi.org/project/mr
 
     python -m pip install .[publish]
 
+Ensure that the correct version number appears in the ``pyproject.toml`` file and in any links to this package's Read the Docs documentation that exist in this README document. Also ensure that the Read the Docs project for this library has an `automation rule <https://docs.readthedocs.io/en/stable/automation-rules.html>`__ that activates and sets as the default all tagged versions. Create and push a tag for this version (replacing ``?.?.?`` with the version number)::
+
+    git tag ?.?.?
+    git push origin ?.?.?
+
 Remove any old build/distribution files. Then, package the source into a distribution archive using the `wheel <https://pypi.org/project/wheel>`__ package::
 
-    rm -rf dist *.egg-info
-    python setup.py sdist bdist_wheel
+    rm -rf build dist *.egg-info
+    python -m build --sdist --wheel .
 
 Finally, upload the package distribution archive to `PyPI <https://pypi.org>`__ using the `twine <https://pypi.org/project/twine>`__ package::
 

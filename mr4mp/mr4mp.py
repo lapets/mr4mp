@@ -62,7 +62,7 @@ class pool:
         self._processes = processes
         self._stages = stages
         self._progress = progress
-        self._close = close # Indicates whether to close the pool after first `mapreduce` call.
+        self._close = close # Indicates whether to close pool after first ``mapreduce`` call.
         self._closed = False
         self._terminated = False
 
@@ -331,5 +331,5 @@ def mapconcat(
     """
     return mapreduce(m, concat, xs, processes, stages=stages, progress=progress)
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     doctest.testmod() # pragma: no cover

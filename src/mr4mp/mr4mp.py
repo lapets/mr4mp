@@ -86,10 +86,7 @@ class pool:
         if self._processes == 1:
             return [[op(x) for x in xs]]
 
-        return self._pool.map(
-            partial(map, op),
-            parts.parts(xs, self._pool._processes) # pylint: disable=W0212
-        )
+        return self._pool.map(partial(map, op), parts.parts(xs, len(self)))
 
     def _reduce(self: pool, op: Callable, xs_per_part: Iterable):
         """
@@ -227,8 +224,9 @@ class pool:
         if self._processes == 1:
             return self._closed
 
-        return ( # pylint: disable=W0212
-            self._closed or self._pool._state in ('CLOSE', 'TERMINATE')
+        return (
+            self._closed or
+            self._pool._state in ('CLOSE', 'TERMINATE') # pylint: disable=protected-access
         )
 
     def terminate(self: pool):

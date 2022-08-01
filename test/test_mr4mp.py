@@ -19,11 +19,11 @@ def api_methods():
     return {'pool', 'mapreduce', 'mapconcat'}
 
 class Test_namespace(TestCase):
-    # pylint: disable=C0116 # Method docstrings are not included.
     """
     Check that the exported namespace provide access to the expected
     classes and functions.
     """
+    # pylint: disable=missing-function-docstring
     def test_module(self):
         module = import_module('mr4mp.mr4mp')
         self.assertTrue(api_methods().issubset(module.__dict__.keys()))
@@ -49,12 +49,12 @@ def add_one(x):
     """
     return [x + 1]
 
-class log():
-    # pylint: disable=C0116 # Method docstrings are not included.
+class log:
     """
     Log of progress function outputs that can be used for testing progress update
     features.
     """
+    # pylint: disable=missing-function-docstring
     def __init__(self):
         self.logged = []
 
@@ -71,10 +71,10 @@ def define_class_pool_close(processes):
     behavior configuration.
     """
     class Test_pool_close(TestCase):
-        # pylint: disable=C0116 # Method docstrings are not included.
         """
         Tests of behavior of method that closes an instance.
         """
+        # pylint: disable=missing-function-docstring
         def test_pool_mapreduce_pool_close(self):
             pool = mr4mp.pool(processes, close=True)
             self.assertFalse(pool.closed())
@@ -139,11 +139,11 @@ def define_class_pool_stages_progress(processes, stages, progress):
     and progress function configuration.
     """
     class Test_pool_stages_progress(TestCase):
-        # pylint: disable=C0116 # Method docstrings are not included.
         """
         Tests of feature that allows a workflow to be broken down into stages,
         with progress being reported at the end of each stage.
         """
+        # pylint: disable=missing-function-docstring
         def test_pool_mapreduce(self):
             logger = log() if progress else None
             pool = mr4mp.pool(processes, close=True)
@@ -174,10 +174,10 @@ def define_class_functions(processes, stages, progress):
     for the given configuration.
     """
     class Test_functions(TestCase):
-        # pylint: disable=C0116 # Method docstrings are not included.
         """
         Tests of one-shot functions for executing workflows.
         """
+        # pylint: disable=missing-function-docstring
         def test_mapreduce(self):
             logger = log() if progress else None
             result = mr4mp.mapreduce(
@@ -207,10 +207,10 @@ def define_class_functions(processes, stages, progress):
     return Test_functions
 
 class Test_pool(TestCase):
-    # pylint: disable=C0116 # Method docstrings are not included.
     """
     Tests of resource pool instance methods.
     """
+    # pylint: disable=missing-function-docstring
     def test_pool_cpu_count(self):
         pool = mr4mp.pool()
         self.assertEqual(pool.cpu_count(), mp.cpu_count())

@@ -32,14 +32,18 @@ This library is available as a `package on PyPI <https://pypi.org/project/mr4mp>
 
     python -m pip install mr4mp
 
-The library can be imported in the usual way::
+The library can be imported in the usual way:
+
+.. code-block:: python
 
     import mr4mp
 
 Word-Document Index Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Suppose we have some functions that we can use to build an index of randomly generated words::
+Suppose we have some functions that we can use to build an index of randomly generated words:
+
+.. code-block:: python
 
     from random import choice
     from string import ascii_lowercase
@@ -53,7 +57,9 @@ Suppose we have some functions that we can use to build an index of randomly gen
     def merge(i, j): # Merge two index dictionaries i and j.
         return {k:(i.get(k,set()) | j.get(k,set())) for k in i.keys() | j.keys()}
 
-We can then construct an index in the following way::
+We can then construct an index in the following way:
+
+.. code-block:: python
 
     from timeit import default_timer
 
@@ -67,7 +73,9 @@ The above might yield the following output::
 
     Finished in 0.664681524217187s using 2 process(es).
 
-Suppose that we instead explicitly specify that only one process can be used::
+Suppose that we instead explicitly specify that only one process can be used:
+
+.. code-block:: python
 
     pool = mr4mp.pool(1)
 
@@ -83,7 +91,9 @@ All installation and development dependencies are fully specified in ``pyproject
 
 Documentation
 ^^^^^^^^^^^^^
-The documentation can be generated automatically from the source files using `Sphinx <https://www.sphinx-doc.org>`__::
+The documentation can be generated automatically from the source files using `Sphinx <https://www.sphinx-doc.org>`__:
+
+.. code-block:: bash
 
     python -m pip install .[docs]
     cd docs

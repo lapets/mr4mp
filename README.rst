@@ -72,7 +72,7 @@ Assume there exists a collection of documents and that each document contains a 
 .. |pool| replace:: ``pool``
 .. _pool: https://mr4mp.readthedocs.io/en/2.7.0/_source/mr4mp.html#mr4mp.mr4mp.pool
 
-The code below (also included in ``index.py``) constructs a dictionary that maps each individual word to the set of document identifiers in which that word appears. The code does so by incrementally building up larger and larger dictionaries (starting from one dictionary per document via the ``word_to_doc_id_dict`` function and merging them via the ``merge_dicts`` function), all while using the maximum number of processes supported by the system: 
+The code below (also included in ``example.py``) constructs a dictionary that maps each individual word to the set of document identifiers in which that word appears. The code does so by incrementally building up larger and larger dictionaries (starting from one dictionary per document via the ``word_to_doc_id_dict`` function and merging them via the ``merge_dicts`` function), all while using the maximum number of processes supported by the system: 
 
 .. code-block:: python
 
@@ -93,7 +93,7 @@ Note that any code invoking library methods must be protected inside an ``if __n
 
 .. code-block:: bash
 
-    python index.py
+    python example.py
     Finished in 0.664681524217187s using 2 process(es).
 
 Suppose that it is explicitly indicated (by adding ``processes=1`` to the invocation of |pool|_) that only one process can be used:
@@ -106,7 +106,7 @@ After the above modification, executing the module might yield the output below:
 
 .. code-block:: bash
 
-    python index.py
+    python example.py
     Finished in 2.23329004518571s using 1 process(es).
 
 Development

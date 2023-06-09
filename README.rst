@@ -24,7 +24,7 @@ Thin MapReduce-like layer that wraps the Python multiprocessing library.
 
 Purpose
 -------
-This package provides a streamlined interface for the built-in Python `multiprocessing <https://docs.python.org/3/library/multiprocessing.html>`__ library. The interface makes it possible to parallelize in a succinct way (sometimes using only one line of code) a data workflow that can be expressed in a *concise* `MapReduce <https://en.wikipedia.org/wiki/MapReduce>`__-like form. More background information about this package's design and implementation, as well a detailed use case, can be found in a `related article <https://github.com/python-supply/map-reduce-and-multiprocessing>`__.
+This package provides a streamlined interface for the built-in Python `multiprocessing <https://docs.python.org/3/library/multiprocessing.html>`__ library. The interface makes it possible to parallelize in a succinct way (sometimes using only one line of code) a data workflow that can be expressed in a  `MapReduce <https://en.wikipedia.org/wiki/MapReduce>`__-like form. More background information about this package's design and implementation, as well a detailed use case, can be found in a `related article <https://github.com/python-supply/map-reduce-and-multiprocessing>`__.
 
 Installation and Usage
 ----------------------
@@ -72,7 +72,7 @@ Assume there exists a collection of documents and that each document contains a 
 .. |pool| replace:: ``pool``
 .. _pool: https://mr4mp.readthedocs.io/en/2.7.0/_source/mr4mp.html#mr4mp.mr4mp.pool
 
-The code below (also included in ``index.py``) constructs a dictionary that maps each individual word to the set of document identifiers in which that word appears. The code does so by incrementally building up larger and larger dictionaries (starting from one dictionary per document via the ``word_to_doc_id_dict`` function and merging them via the ``merge_dicts`` function), all while using the maximum number of processes supported by the system. Note that any code invoking library methods must be protected inside an ``if __name__ == '__main__':`` block to ensure that the `multiprocessing <https://docs.python.org/3/library/multiprocessing.html>`__ library methods can `safely load the module <https://docs.python.org/3/library/multiprocessing.html#the-process-class>`__ without causing side effects:
+The code below (also included in ``index.py``) constructs a dictionary that maps each individual word to the set of document identifiers in which that word appears. The code does so by incrementally building up larger and larger dictionaries (starting from one dictionary per document via the ``word_to_doc_id_dict`` function and merging them via the ``merge_dicts`` function), all while using the maximum number of processes supported by the system: 
 
 .. code-block:: python
 
@@ -89,14 +89,14 @@ The code below (also included in ``index.py``) constructs a dictionary that maps
             "using " + str(len(p)) + " process(es)."
         )
 
-Executing the module might yield the output below:
+Note that any code invoking library methods must be protected inside an ``if __name__ == '__main__':`` block to ensure that the `multiprocessing <https://docs.python.org/3/library/multiprocessing.html>`__ library methods can `safely load the module <https://docs.python.org/3/library/multiprocessing.html#the-process-class>`__ without causing side effects. Executing the module might yield the output below:
 
 .. code-block:: bash
 
     python index.py
     Finished in 0.664681524217187s using 2 process(es).
 
-Suppose that we instead explicitly specify that only one process can be used by adding the parameter ``processes=1`` to the invocation of |pool|_:
+Suppose that it is explicitly indicated (by adding ``processes=1`` to the invocation of |pool|_) that only one process can be used:
 
 .. code-block:: python
 

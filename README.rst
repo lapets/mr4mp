@@ -48,7 +48,7 @@ In addition to the `use case in a related article <https://github.com/python-sup
 Word-Document Index
 ~~~~~~~~~~~~~~~~~~~
 
-Assume there exists a collection of documents and that each document contains a collection of 7-letter "words". This example demonstrates how a dictionary that associates each word to the collection of documents in which that word appears can be built by leveraging `multiprocessing <https://docs.python.org/3/library/multiprocessing.html>`__ and the `MapReduce <https://en.wikipedia.org/wiki/MapReduce>`__ paradigm. Suppose the function definitions below are found within a module ``example.py``:
+Assume there exists a collection of documents and that each document contains a collection of 7-character "words". This example demonstrates how a dictionary that associates each word to the collection of documents in which that word appears can be built by leveraging `multiprocessing <https://docs.python.org/3/library/multiprocessing.html>`__ and the `MapReduce <https://en.wikipedia.org/wiki/MapReduce>`__ paradigm. Suppose the function definitions below are found within a module ``example.py``:
 
 .. code-block:: python
 
@@ -56,18 +56,26 @@ Assume there exists a collection of documents and that each document contains a 
     from string import ascii_lowercase
     from uuid import uuid4
 
-    def word(): # Generate a random 7-letter "word".
+    def word():
+        """Generate a random 7-character 'word'."""
         return ''.join(choice(ascii_lowercase) for _ in range(7))
 
-    def doc(): # Generate a random 100-word "document" and its identifier.
-        return ([word() for _ in range(100)], uuid4())
+    def doc():
+        """Generate a random 25-word 'document' and its identifier."""
+        return ([word() for _ in range(25)], uuid4())
 
-    def word_to_doc_id_dict(doc): # Build dictionary mapping a document's words to its identifier.
-        (ws, identifier) = doc
-        return {w: {identifier} for w in ws}
+    def docs():
+        """Generate list of 50 random 'documents'."""
+        return [doc() for _ in range(50)]
 
-    def merge_dicts(u, v): # Merge two dictionaries ``u`` and ``v``.
-        return {w: (u.get(w, set()) | v.get(w, set())) for w in u.keys() | v.keys()}
+    def word_to_doc_id_dict(document):
+        """Build a dictionary mapping the 'words' in a 'document' to its identifier."""
+        (words, identifier) = document
+        return {w: {identifier} for w in words}
+
+    def merge_dicts(d, e):
+        """Merge two dictionaries ``d`` and ``e``."""
+        return {w: (d.get(w, set()) | e.get(w, set())) for w in d.keys() | e.keys()}
 
 .. |pool| replace:: ``pool``
 .. _pool: https://mr4mp.readthedocs.io/en/2.7.0/_source/mr4mp.html#mr4mp.mr4mp.pool
@@ -82,7 +90,7 @@ The code below (also included in ``example.py``) constructs a dictionary that ma
 
         start = default_timer()
         p = mr4mp.pool()
-        p.mapreduce(word_to_doc_id_dict, merge_dicts, [doc() for _ in range(100)])
+        p.mapreduce(word_to_doc_id_dict, merge_dicts, docs())
         p.close()
         print(
             "Finished in " + str(default_timer()-start) + "s " +

@@ -30,17 +30,20 @@ class Test_namespace(TestCase):
 
 def word(identifier, k):
     """Create a random three-character word."""
-    return ''.join(ascii_lowercase[i % 7] for i in sha256(bytes(identifier * k)).digest()[:3])
+    return ''.join(
+        ascii_lowercase[i % 7]
+        for i in sha256(bytes(identifier * k)).digest()[:3]
+    )
 
-def index(identifier):
-    """Given an index value, make 25 words that map to it."""
+def word_to_doc_id_dict(identifier):
+    """Given a document identifier, map 25 random words to that identifier."""
     return {w:{identifier} for w in {word(identifier, k) for k in range(25)}}
 
-def merge(i, j):
-    """Merge two word counts."""
-    return {k:(i.get(k,set()) | j.get(k,set())) for k in i.keys() | j.keys()}
+def merge_dicts(u, v):
+    """Merge two dictionaries."""
+    return {w: (u.get(w, set()) | v.get(w, set())) for w in u.keys() | v.keys()}
 
-result_reference = reduce(merge, map(index, range(50)))
+result_reference = reduce(merge_dicts, map(word_to_doc_id_dict, range(50)))
 
 def add_one(x):
     """
@@ -80,9 +83,9 @@ def define_class_pool_close(processes):
             self.assertFalse(pool.closed())
             print("Starting.")
             start = default_timer()
-            result = pool.mapreduce(index, merge, range(50), close=False)
+            result = pool.mapreduce(word_to_doc_id_dict, merge_dicts, range(50), close=False)
             self.assertFalse(pool.closed())
-            result = pool.mapreduce(index, merge, range(50))
+            result = pool.mapreduce(word_to_doc_id_dict, merge_dicts, range(50))
             self.assertTrue(pool.closed())
             print("Finished in " + str(default_timer()-start) +
                   "s using " + str(len(pool)) + " processes.")
@@ -93,9 +96,9 @@ def define_class_pool_close(processes):
             self.assertFalse(pool.closed())
             print("Starting.")
             start = default_timer()
-            result = pool.mapreduce(index, merge, range(50), close=False)
+            result = pool.mapreduce(word_to_doc_id_dict, merge_dicts, range(50), close=False)
             self.assertFalse(pool.closed())
-            result = pool.mapreduce(index, merge, range(50), close=True)
+            result = pool.mapreduce(word_to_doc_id_dict, merge_dicts, range(50), close=True)
             self.assertTrue(pool.closed())
             print("Finished in " + str(default_timer()-start) +
                   "s using " + str(len(pool)) + " processes.")
@@ -103,9 +106,9 @@ def define_class_pool_close(processes):
 
         def test_pool_mapreduce_pool_open_reuse(self):
             pool = mr4mp.pool(processes, close=False)
-            result = pool.mapreduce(index, merge, range(50))
-            result = pool.mapreduce(index, merge, range(50))
-            result = pool.mapreduce(index, merge, range(50))
+            result = pool.mapreduce(word_to_doc_id_dict, merge_dicts, range(50))
+            result = pool.mapreduce(word_to_doc_id_dict, merge_dicts, range(50))
+            result = pool.mapreduce(word_to_doc_id_dict, merge_dicts, range(50))
             self.assertFalse(pool.closed())
             pool.close()
             self.assertTrue(pool.closed())
@@ -113,21 +116,21 @@ def define_class_pool_close(processes):
 
         def test_pool_mapreduce_pool_close_reuse_exception(self):
             pool = mr4mp.pool(processes, close=True)
-            pool.mapreduce(index, merge, range(50))
+            pool.mapreduce(word_to_doc_id_dict, merge_dicts, range(50))
             with self.assertRaises(ValueError):
-                pool.mapreduce(index, merge, range(50))
+                pool.mapreduce(word_to_doc_id_dict, merge_dicts, range(50))
 
         def test_pool_mapreduce_function_close_reuse_exception(self):
             pool = mr4mp.pool(processes, close=False)
-            pool.mapreduce(index, merge, range(50), close=True)
+            pool.mapreduce(word_to_doc_id_dict, merge_dicts, range(50), close=True)
             with self.assertRaises(ValueError):
-                pool.mapreduce(index, merge, range(50))
+                pool.mapreduce(word_to_doc_id_dict, merge_dicts, range(50))
 
         def test_pool_mapreduce_many_with_as(self):
             with mr4mp.pool(processes) as pool:
-                result = pool.mapreduce(index, merge, range(50))
-                result = pool.mapreduce(index, merge, range(50))
-                result = pool.mapreduce(index, merge, range(50))
+                result = pool.mapreduce(word_to_doc_id_dict, merge_dicts, range(50))
+                result = pool.mapreduce(word_to_doc_id_dict, merge_dicts, range(50))
+                result = pool.mapreduce(word_to_doc_id_dict, merge_dicts, range(50))
                 self.assertFalse(pool.closed())
             self.assertEqual(result, result_reference)
 
@@ -147,7 +150,13 @@ def define_class_pool_stages_progress(processes, stages, progress):
         def test_pool_mapreduce(self):
             logger = log() if progress else None
             pool = mr4mp.pool(processes, close=True)
-            result = pool.mapreduce(index, merge, range(50), stages=stages, progress=logger)
+            result = pool.mapreduce(
+                word_to_doc_id_dict,
+                merge_dicts,
+                range(50),
+                stages=stages,
+                progress=logger
+            )
             self.assertEqual(result, result_reference)
             if progress:
                 self.assertEqual(
@@ -181,7 +190,7 @@ def define_class_functions(processes, stages, progress):
         def test_mapreduce(self):
             logger = log() if progress else None
             result = mr4mp.mapreduce(
-                index, merge, range(50),
+                word_to_doc_id_dict, merge_dicts, range(50),
                 processes=processes, stages=stages, progress=logger
             )
             self.assertEqual(result, result_reference)
@@ -226,7 +235,7 @@ class Test_pool(TestCase):
         pool = mr4mp.pool(close=True)
         print("Starting.")
         start = default_timer()
-        result = pool.mapreduce(index, merge, range(50))
+        result = pool.mapreduce(word_to_doc_id_dict, merge_dicts, range(50))
         print("Finished in " + str(default_timer()-start) +
               "s using " + str(len(pool)) + " processes.")
         self.assertEqual(result, result_reference)
@@ -235,7 +244,7 @@ class Test_pool(TestCase):
         pool = mr4mp.pool()
         print("Starting.")
         start = default_timer()
-        result = pool.mapreduce(index, merge, range(50))
+        result = pool.mapreduce(word_to_doc_id_dict, merge_dicts, range(50))
         print("Finished in " + str(default_timer()-start) +
               "s using " + str(len(pool)) + " processes.")
         self.assertEqual(result, result_reference)

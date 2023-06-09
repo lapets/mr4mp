@@ -78,7 +78,7 @@ Assume there exists a collection of documents and that each document contains a 
         return {w: (d.get(w, set()) | e.get(w, set())) for w in d.keys() | e.keys()}
 
 .. |pool| replace:: ``pool``
-.. _pool: https://mr4mp.readthedocs.io/en/2.7.0/_source/mr4mp.html#mr4mp.mr4mp.pool
+.. _pool: https://mr4mp.readthedocs.io/en/2.7.1/_source/mr4mp.html#mr4mp.mr4mp.pool
 
 The code below (also included in ``example.py``) constructs a dictionary that maps each individual word to the set of document identifiers in which that word appears. The code does so by incrementally building up larger and larger dictionaries (starting from one dictionary per document via the ``word_to_doc_id_dict`` function and merging them via the ``merge_dicts`` function), all while using the maximum number of processes supported by the system: 
 
